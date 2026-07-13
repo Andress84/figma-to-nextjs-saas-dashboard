@@ -1,5 +1,7 @@
+import type { Route } from "next";
+
 export interface DashboardNavItem {
-  href: string;
+  href: Route;
   label: string;
   shortLabel: string;
 }

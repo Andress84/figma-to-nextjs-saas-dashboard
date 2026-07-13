@@ -14,7 +14,7 @@ The planned product is a fictional B2B SaaS analytics dashboard that demonstrate
 - Biome for formatting and import organization
 - ESLint with Next.js Core Web Vitals and TypeScript rules
 - Vitest, React Testing Library, and jsdom
-- Playwright and `@axe-core/playwright`
+- Playwright across Chromium, Firefox, and WebKit, with `@axe-core/playwright`
 - GitHub Actions
 
 ## Routes
@@ -94,13 +94,13 @@ pnpm check
 ```bash
 pnpm test
 pnpm test:watch
-pnpm exec playwright install chromium
+pnpm exec playwright install chromium firefox webkit
 pnpm test:e2e
 pnpm test:e2e:ui
 pnpm check:full
 ```
 
-`pnpm check:full` runs the standard quality suite followed by Playwright navigation and accessibility smoke tests. The UI command is intended for local interactive debugging.
+`pnpm check:full` runs the standard quality suite followed by Playwright navigation and accessibility smoke tests in Chromium, Firefox, and WebKit. The UI command is intended for local interactive debugging.
 
 ## Demo disclaimer
 
