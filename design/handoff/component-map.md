@@ -41,9 +41,26 @@ duplicating component markup.
 
 ---
 
-## 2. Recommended component structure
+## 2. Existing project directory mapping
 
-A possible component structure is:
+The repository already has an established component structure.
+
+The handoff component categories must map to the existing project directories
+as follows:
+
+| Handoff category | Repository directory | Responsibility |
+| --- | --- | --- |
+| `layout` | `src/components/layout/` | Application shell, sidebar, navigation, topbar, page headers, page containers, and mobile drawer |
+| `ui` | `src/components/ui/` | Generic reusable interface primitives without product-specific business meaning |
+| `product` | `src/components/dashboard/` | Shared Subtera dashboard components such as metric cards, trend badges, plan rows, workspace controls, and settings sections |
+| `tables` | `src/components/data-table/` | Shared table primitives and product table implementations |
+| `charts` | `src/components/charts/` | Shared chart containers, legends, tooltips, and responsive chart implementations |
+
+The terms `product` and `tables` used elsewhere in this document describe
+component responsibilities. They do not require directories with those exact
+names.
+
+### Canonical component structure
 
 ```text
 src/components/
@@ -71,6 +88,17 @@ src/components/
 │   ├── pagination.tsx
 │   └── status-message.tsx
 │
+├── dashboard/
+│   ├── metric-card.tsx
+│   ├── workspace-switcher.tsx
+│   ├── profile-row.tsx
+│   ├── trend-badge.tsx
+│   ├── status-badge.tsx
+│   ├── plan-row.tsx
+│   ├── settings-section.tsx
+│   ├── form-field.tsx
+│   └── danger-zone.tsx
+│
 ├── charts/
 │   ├── chart-card.tsx
 │   ├── chart-legend.tsx
@@ -81,30 +109,38 @@ src/components/
 │   ├── churn-chart.tsx
 │   └── donut-chart.tsx
 │
-├── tables/
-│   ├── data-table.tsx
-│   ├── table-header.tsx
-│   ├── customer-table.tsx
-│   ├── subscription-table.tsx
-│   ├── plan-performance-table.tsx
-│   ├── transaction-table.tsx
-│   └── mobile-transaction-list.tsx
-│
-└── product/
-    ├── metric-card.tsx
-    ├── workspace-switcher.tsx
-    ├── profile-row.tsx
-    ├── trend-badge.tsx
-    ├── status-badge.tsx
-    ├── plan-row.tsx
-    ├── settings-section.tsx
-    ├── form-field.tsx
-    └── danger-zone.tsx
+└── data-table/
+    ├── data-table.tsx
+    ├── table-header.tsx
+    ├── customer-table.tsx
+    ├── subscription-table.tsx
+    ├── plan-performance-table.tsx
+    ├── transaction-table.tsx
+    └── mobile-transaction-list.tsx
 ```
 
-Codex may adapt filenames to the existing project conventions.
+Exact filenames may follow the existing repository conventions.
 
-The responsibility boundaries should remain the same.
+Create `src/components/charts/` and `src/components/data-table/` only when
+their first real implementations are added.
+
+Do not create parallel component directory systems.
+
+In particular:
+
+- Do not create both `src/components/product/` and
+  `src/components/dashboard/`.
+- Do not create both `src/components/tables/` and
+  `src/components/data-table/`.
+- Do not duplicate layout components inside route or feature directories.
+- Do not create route-specific copies of shared UI primitives.
+- Do not move existing components only to match example filenames from this
+  document.
+- Do not perform a broad component architecture rewrite without a documented
+  implementation reason.
+
+The responsibility boundaries defined in this document must remain consistent
+even when filenames are adapted to the existing codebase.
 
 ---
 

@@ -24,16 +24,29 @@ This is a static frontend demonstration, not a production billing platform.
 Implementation priority:
 
 1. `design/approved-screens/`
-2. This specification
-3. `design/handoff/`
-4. `design/prototype-source/`
-5. `design/references/`
+2. This specification: `design/brief/final-approved-specification.md`
+3. `design/brief/implementation-scope.md`
+4. `design/handoff/`
+5. `design/prototype-source/`
+6. `design/references/`
 
-The approved screenshots and this specification override older prototype
-content whenever there is a conflict.
+When two sources conflict, the source listed earlier takes priority.
+
+The approved screenshots define the final visual direction.
+
+This specification defines the approved product structure, content, and
+behavior.
+
+The implementation scope defines what must and must not be built.
+
+The handoff documents define reusable components, design tokens, responsive
+rules, shared fictional data, routes, layout, and visual QA requirements.
+
+The prototype source is a visual and content reference only. It must not be
+used as the production application architecture.
 
 The original reference images define visual inspiration only. They must not be
-copied directly.
+copied directly or override approved screens and specifications.
 
 ---
 
