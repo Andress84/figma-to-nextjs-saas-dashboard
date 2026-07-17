@@ -792,12 +792,32 @@ src/
 ├── components/
 │   ├── layout/
 │   ├── ui/
+│   ├── dashboard/
 │   ├── charts/
-│   ├── tables/
-│   └── product/
+│   └── data-table/
 │
 └── styles/
 ```
+
+The canonical component category mapping is:
+
+- `layout` → `src/components/layout/`;
+- `ui` → `src/components/ui/`;
+- `product` → `src/components/dashboard/`;
+- `tables` → `src/components/data-table/`;
+- `charts` → `src/components/charts/`.
+
+The terms `product` and `tables` describe component responsibilities. They do
+not require directories with those names.
+
+Do not create both `src/components/product/` and
+`src/components/dashboard/`.
+
+Do not create both `src/components/tables/` and
+`src/components/data-table/`.
+
+Create `src/components/charts/` and `src/components/data-table/` only when
+their first real implementations are introduced.
 
 Codex may adapt this structure to the existing project.
 

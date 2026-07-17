@@ -25,7 +25,7 @@ Verify that:
 - the mobile app bar is approximately `64px` high;
 - the application fills the viewport without presentation margins;
 - the ChatGPT Sites view switcher is not included;
-- the Portfolio Cover frame is not included inside product routes;
+- the Portfolio Cover is not implemented inside the Next.js dashboard;
 - no page uses `transform: scale()`;
 - no page is rendered inside an artificial fixed canvas;
 - the shell remains consistent across all routes;
@@ -41,6 +41,10 @@ Approved routes:
 - `/customers`
 - `/subscriptions`
 - `/settings`
+
+The Portfolio Cover is a presentation asset only. It is not a product route,
+part of the application shell, an application screen or a required
+product-screen visual parity target.
 
 ---
 
@@ -1001,12 +1005,11 @@ Check:
 
 ## 32. Final screenshot comparison
 
-For each approved screen, compare implementation and reference side by
-side.
+For each approved product screen or component-system reference, compare the
+implementation and reference side by side.
 
-Required comparisons:
+Required application and component-system comparisons:
 
-- Portfolio Cover
 - Overview Desktop
 - Analytics Desktop
 - Customers Desktop
@@ -1015,6 +1018,11 @@ Required comparisons:
 - Overview Mobile
 - Mobile Drawer
 - Mini UI Kit
+
+The Portfolio Cover may still receive separate portfolio-presentation QA, but
+it must remain clearly separated from application visual QA. Do not implement
+it as a product route, shell element or application screen inside the Next.js
+dashboard.
 
 Compare:
 
