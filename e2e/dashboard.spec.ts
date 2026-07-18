@@ -13,12 +13,39 @@ test("navigates between every dashboard route", async ({ page }) => {
   await page.goto("/");
 
   const primaryNavigation = page.getByRole("navigation", { name: "Primary navigation" });
+  const breadcrumb = page.getByRole("navigation", { name: "Breadcrumb" });
+
+  await expect(primaryNavigation.getByRole("link")).toHaveCount(5);
 
   for (const route of routes) {
-    await primaryNavigation.getByRole("link", { name: route.label }).click();
+    const routeLink = primaryNavigation.getByRole("link", { name: route.label });
+
+    await routeLink.click();
     await expect(page).toHaveURL((url) => url.pathname === route.path);
     await expect(page.getByRole("heading", { level: 1, name: route.heading })).toBeVisible();
+    await expect(routeLink).toHaveAttribute("aria-current", "page");
+    await expect(primaryNavigation.locator('[aria-current="page"]')).toHaveCount(1);
+    await expect(breadcrumb.getByText("Dashboard", { exact: true })).toBeVisible();
+    await expect(breadcrumb.getByText(route.label, { exact: true })).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
   }
+});
+
+test("renders the approved shared desktop shell content", async ({ page }) => {
+  await page.goto("/");
+
+  const sidebar = page.getByRole("complementary");
+
+  await expect(sidebar.getByRole("link", { name: "Subtera overview" })).toBeVisible();
+  await expect(sidebar.getByText("Acme Cloud", { exact: true })).toBeVisible();
+  await expect(sidebar.getByText("Maya Chen", { exact: true })).toBeVisible();
+  await expect(sidebar.getByText("Workspace Admin", { exact: true })).toBeVisible();
+  await expect(page.getByText("Phase 1", { exact: true })).toHaveCount(0);
+  await expect(page.getByText("Technical foundation", { exact: true })).toHaveCount(0);
+  await expect(page.getByText("Portfolio project", { exact: true })).toHaveCount(0);
+  await expect(page.getByText("Local demo", { exact: true })).toHaveCount(0);
 });
 
 test("passes an automated WCAG accessibility smoke test", async ({ page }) => {

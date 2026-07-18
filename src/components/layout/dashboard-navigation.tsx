@@ -2,16 +2,25 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import {
+  ChartNoAxesCombined,
+  CreditCard,
+  LayoutDashboard,
+  Settings,
+  UsersRound,
+  type LucideIcon,
+} from "lucide-react";
+import { appShellConfig } from "@/data/mock/app-shell";
 import { cn } from "@/lib/utils";
-import type { DashboardNavItem } from "@/types/navigation";
+import type { DashboardNavIconKey } from "@/types/navigation";
 
-const navigationItems = [
-  { href: "/", label: "Overview", shortLabel: "OV" },
-  { href: "/analytics", label: "Analytics", shortLabel: "AN" },
-  { href: "/customers", label: "Customers", shortLabel: "CU" },
-  { href: "/subscriptions", label: "Subscriptions", shortLabel: "SU" },
-  { href: "/settings", label: "Settings", shortLabel: "SE" },
-] satisfies readonly DashboardNavItem[];
+const navigationIcons = {
+  overview: LayoutDashboard,
+  analytics: ChartNoAxesCombined,
+  customers: UsersRound,
+  subscriptions: CreditCard,
+  settings: Settings,
+} satisfies Record<DashboardNavIconKey, LucideIcon>;
 
 function isCurrentRoute(pathname: string, href: string) {
   return href === "/" ? pathname === href : pathname.startsWith(href);
@@ -27,8 +36,9 @@ export function DashboardNavigation({ className, onNavigate }: Readonly<Dashboar
 
   return (
     <ul className={cn("navigation-list", className)}>
-      {navigationItems.map((item) => {
+      {appShellConfig.navigation.map((item) => {
         const isCurrent = isCurrentRoute(pathname, item.href);
+        const Icon = navigationIcons[item.iconKey];
 
         return (
           <li key={item.href}>
@@ -38,9 +48,7 @@ export function DashboardNavigation({ className, onNavigate }: Readonly<Dashboar
               aria-current={isCurrent ? "page" : undefined}
               onClick={onNavigate}
             >
-              <span className="navigation-marker" aria-hidden="true">
-                {item.shortLabel}
-              </span>
+              <Icon className="navigation-icon" size={19} strokeWidth={1.8} aria-hidden="true" />
               <span>{item.label}</span>
             </Link>
           </li>
