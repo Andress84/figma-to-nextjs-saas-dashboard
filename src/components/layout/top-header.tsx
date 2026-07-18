@@ -1,4 +1,6 @@
 import { Bell, ChevronDown, CircleHelp } from "lucide-react";
+import { Avatar } from "@/components/ui/avatar";
+import { IconButton } from "@/components/ui/icon-button";
 import { appShellConfig } from "@/data/mock/app-shell";
 import { DashboardBreadcrumb } from "./dashboard-breadcrumb";
 
@@ -7,22 +9,25 @@ export function TopHeader() {
     <header className="top-header">
       <DashboardBreadcrumb />
       <div className="top-header-actions">
-        <button className="top-header-icon-button" type="button" aria-label="Help">
+        <IconButton className="top-header-icon-button" label="Help" size="mobile">
           <CircleHelp size={19} strokeWidth={1.8} aria-hidden="true" />
-        </button>
-        <button
+        </IconButton>
+        <IconButton
           className="top-header-icon-button notification-button"
-          type="button"
-          aria-label="Notifications"
+          label="Notifications"
+          size="mobile"
         >
           <Bell size={19} strokeWidth={1.8} aria-hidden="true" />
           <span className="notification-dot" aria-hidden="true" />
-        </button>
+        </IconButton>
         <span className="top-header-divider" aria-hidden="true" />
         <div className="top-header-profile">
-          <span className="top-header-avatar" aria-hidden="true">
-            {appShellConfig.profile.initials}
-          </span>
+          <Avatar
+            className="top-header-avatar"
+            name={appShellConfig.profile.name}
+            initials={appShellConfig.profile.initials}
+            decorative
+          />
           <span className="sr-only">
             {appShellConfig.profile.name}, {appShellConfig.profile.role}
           </span>

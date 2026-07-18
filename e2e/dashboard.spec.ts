@@ -64,6 +64,8 @@ test("renders the approved shared desktop shell content", async ({ page }) => {
   await expect(sidebar.getByText("Acme Cloud", { exact: true })).toBeVisible();
   await expect(sidebar.getByText("Maya Chen", { exact: true })).toBeVisible();
   await expect(sidebar.getByText("Workspace Admin", { exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Help" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Notifications" })).toBeVisible();
   await expect(page.getByText("Phase 1", { exact: true })).toHaveCount(0);
   await expect(page.getByText("Technical foundation", { exact: true })).toHaveCount(0);
   await expect(page.getByText("Portfolio project", { exact: true })).toHaveCount(0);

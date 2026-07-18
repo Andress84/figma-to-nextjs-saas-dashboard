@@ -5,6 +5,8 @@ import { type KeyboardEvent as ReactKeyboardEvent, useEffect, useRef } from "rea
 import { createPortal } from "react-dom";
 import { ProfileRow } from "@/components/dashboard/profile-row";
 import { WorkspaceSwitcher } from "@/components/dashboard/workspace-switcher";
+import { IconButton } from "@/components/ui/icon-button";
+import { Input } from "@/components/ui/input";
 import { appShellConfig } from "@/data/mock/app-shell";
 import { DashboardNavigation } from "./dashboard-navigation";
 import { SubteraBrand } from "./subtera-brand";
@@ -169,29 +171,31 @@ export function MobileDrawer({ isOpen, onRequestClose }: Readonly<MobileDrawerPr
             Navigation menu
           </h2>
           <SubteraBrand onNavigate={onRequestClose} />
-          <button
+          <IconButton
             ref={closeButtonRef}
             className="mobile-icon-button mobile-drawer-close"
-            type="button"
-            aria-label="Close navigation menu"
+            label="Close navigation menu"
+            size="mobile"
+            variant="secondary"
             onClick={onRequestClose}
           >
             <X size={22} strokeWidth={1.8} aria-hidden="true" />
-          </button>
+          </IconButton>
         </div>
 
         <WorkspaceSwitcher name={appShellConfig.workspace.name} />
 
-        <div className="workspace-search mobile-workspace-search" role="search">
+        <div role="search">
           <label className="sr-only" htmlFor="mobile-workspace-search">
             Search workspace
           </label>
-          <Search size={18} strokeWidth={1.8} aria-hidden="true" />
-          <input
+          <Input
+            className="workspace-search mobile-workspace-search"
             id="mobile-workspace-search"
             name="mobile-workspace-search"
             type="search"
             placeholder="Search workspace"
+            leadingIcon={<Search size={18} strokeWidth={1.8} />}
           />
         </div>
 

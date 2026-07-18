@@ -2,6 +2,7 @@
 
 import { Bell, Menu, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { IconButton } from "@/components/ui/icon-button";
 import { MobileDrawer, mobileDrawerId } from "./mobile-drawer";
 import { SubteraBrand } from "./subtera-brand";
 
@@ -53,28 +54,30 @@ export function MobileNavigation() {
       <header className="mobile-navigation">
         <SubteraBrand className="subtera-brand-mobile" />
         <div className="mobile-navigation-actions">
-          <button
+          <IconButton
             className="mobile-icon-button notification-button"
-            type="button"
-            aria-label="Notifications"
+            label="Notifications"
+            size="mobile"
+            variant="secondary"
             aria-expanded={isNotificationVisible}
             onClick={() => setIsNotificationVisible((isVisible) => !isVisible)}
           >
             <Bell size={19} strokeWidth={1.8} aria-hidden="true" />
             <span className="notification-dot" aria-hidden="true" />
-          </button>
-          <button
+          </IconButton>
+          <IconButton
             ref={menuButtonRef}
             className="mobile-icon-button"
-            type="button"
-            aria-label="Open navigation menu"
+            label="Open navigation menu"
+            size="mobile"
+            variant="secondary"
             aria-haspopup="dialog"
             aria-expanded={isDrawerOpen}
             aria-controls={mobileDrawerId}
             onClick={openDrawer}
           >
             <Menu size={20} strokeWidth={1.8} aria-hidden="true" />
-          </button>
+          </IconButton>
         </div>
 
         {isNotificationVisible ? (
