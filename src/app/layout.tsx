@@ -1,25 +1,32 @@
 import type { Metadata, Viewport } from "next";
+import { Manrope } from "next/font/google";
 import type { ReactNode } from "react";
 import "./globals.css";
 import { Providers } from "./providers";
 
+const manrope = Manrope({
+  display: "swap",
+  subsets: ["latin"],
+  variable: "--font-manrope",
+});
+
 export const metadata: Metadata = {
   title: {
-    default: "SaaS Dashboard Foundation",
-    template: "%s | SaaS Dashboard Foundation",
+    default: "Subtera — Subscription Analytics Dashboard",
+    template: "%s — Subtera",
   },
   description:
-    "Phase 1 foundation for a professional Figma-to-Next.js SaaS dashboard portfolio project.",
+    "A fictional subscription analytics dashboard built as a responsive frontend portfolio demonstration.",
 };
 
 export const viewport: Viewport = {
-  colorScheme: "light",
-  themeColor: "#f7f8fa",
+  colorScheme: "dark",
+  themeColor: "#08090E",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
   return (
-    <html lang="en">
+    <html className={manrope.variable} lang="en">
       <body>
         <Providers>{children}</Providers>
       </body>
