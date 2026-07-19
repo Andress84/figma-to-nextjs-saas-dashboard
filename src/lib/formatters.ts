@@ -32,6 +32,13 @@ const fullDateFormatter = new Intl.DateTimeFormat(LOCALE, {
   year: "numeric",
 });
 
+const paddedFullDateFormatter = new Intl.DateTimeFormat(LOCALE, {
+  day: "2-digit",
+  month: "short",
+  timeZone: STABLE_TIME_ZONE,
+  year: "numeric",
+});
+
 const dateTimeFormatter = new Intl.DateTimeFormat(LOCALE, {
   day: "numeric",
   hour: "2-digit",
@@ -90,6 +97,10 @@ export function formatPercentagePoints(value: number) {
 
 export function formatDate(value: string) {
   return fullDateFormatter.format(parseIsoDate(value));
+}
+
+export function formatTableDate(value: string) {
+  return paddedFullDateFormatter.format(parseIsoDate(value));
 }
 
 export function formatDateTime(value: string) {

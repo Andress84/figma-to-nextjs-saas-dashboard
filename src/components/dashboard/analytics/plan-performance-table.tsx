@@ -16,6 +16,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { PLAN_PERFORMANCE } from "@/data/mock/plans";
 import { RETENTION_METRICS } from "@/data/mock/reporting";
+import { downloadCsv } from "@/lib/csv";
 import {
   formatChurnPercent,
   formatCount,
@@ -26,7 +27,6 @@ import {
 import type { PlanPerformance } from "@/types/dashboard";
 import {
   buildPlanPerformanceCsv,
-  downloadCsv,
   getMrrContribution,
   PLAN_PERFORMANCE_EXPORT_FILE_NAME,
 } from "./analytics-export";

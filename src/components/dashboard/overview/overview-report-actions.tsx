@@ -5,6 +5,7 @@ import { type PointerEvent as ReactPointerEvent, useEffect, useId, useRef, useSt
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
 import { PLAN_DEFINITIONS } from "@/data/mock/plans";
+import { downloadCsv } from "@/lib/csv";
 import type { PlanId, TransactionStatus } from "@/types/dashboard";
 import { buildOverviewTransactionsCsv, OVERVIEW_EXPORT_FILE_NAME } from "./overview-export";
 import { useOverviewReport } from "./overview-report-context";
@@ -90,16 +91,7 @@ export function OverviewReportActions({ reportingPeriod }: Readonly<OverviewRepo
 
   function exportVisibleTransactions() {
     const csv = buildOverviewTransactionsCsv(visibleTransactions);
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const anchor = document.createElement("a");
-
-    anchor.href = url;
-    anchor.download = OVERVIEW_EXPORT_FILE_NAME;
-    document.body.append(anchor);
-    anchor.click();
-    anchor.remove();
-    URL.revokeObjectURL(url);
+    downloadCsv(csv, OVERVIEW_EXPORT_FILE_NAME);
     setExportStatus(
       `Downloaded ${OVERVIEW_EXPORT_FILE_NAME} with ${visibleTransactions.length} ${
         visibleTransactions.length === 1 ? "transaction" : "transactions"

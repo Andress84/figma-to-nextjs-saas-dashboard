@@ -12,7 +12,7 @@ export interface PlanDefinition {
   readonly colorKey: PlanColorKey;
 }
 
-export type TrendTone = "positive" | "negative" | "improvement" | "neutral";
+export type TrendTone = "positive" | "negative" | "improvement" | "information" | "neutral";
 
 export type TrendDescriptor =
   | {
@@ -84,6 +84,7 @@ export interface CustomerRecord {
   readonly id: string;
   readonly joinedDate: IsoDateString;
   readonly lastActivityLabel: string;
+  readonly lastActivityMinutesAgo: number;
   readonly name: string;
   readonly planId: PlanId;
   readonly status: CustomerStatus;

@@ -61,8 +61,9 @@ export function DataTable<TData, TColumnId extends string, TRowId extends DataTa
   const visibleRowIds = sortedRows.map(getRowId);
   const selectedRowIds = selection?.selectedRowIds ?? [];
   const selectedIds = new Set<DataTableRowId>(selectedRowIds);
+  const showSelectionColumn = Boolean(selection && selection.showSelectionColumn !== false);
   const { allSelected, indeterminate } = getVisibleSelectionState(visibleRowIds, selectedRowIds);
-  const columnCount = columns.length + Number(Boolean(selection));
+  const columnCount = columns.length + Number(showSelectionColumn);
 
   return (
     <>
@@ -75,7 +76,7 @@ export function DataTable<TData, TColumnId extends string, TRowId extends DataTa
       <DataTableElement className={className} aria-busy={loading ? true : undefined}>
         <DataTableCaption visible={captionVisible}>{caption}</DataTableCaption>
         <DataTableHeader>
-          {selection ? (
+          {selection && showSelectionColumn ? (
             <DataTableHeaderCell className="data-table-selection-cell">
               <RowSelectionCheckbox
                 checked={allSelected}
@@ -134,8 +135,13 @@ export function DataTable<TData, TColumnId extends string, TRowId extends DataTa
                 const selected = selectedIds.has(rowId);
 
                 return (
-                  <DataTableRow key={rowId} data-row-id={String(rowId)} selected={selected}>
-                    {selection ? (
+                  <DataTableRow
+                    key={rowId}
+                    aria-selected={selection ? selected : undefined}
+                    data-row-id={String(rowId)}
+                    selected={selected}
+                  >
+                    {selection && showSelectionColumn ? (
                       <DataTableCell className="data-table-selection-cell">
                         <RowSelectionCheckbox
                           checked={selected}

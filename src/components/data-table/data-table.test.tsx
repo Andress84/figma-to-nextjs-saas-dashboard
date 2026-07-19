@@ -1,7 +1,7 @@
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useState } from "react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { DataTable } from "./data-table";
 import { DataTableContainer } from "./data-table-structure";
 import type { DataTableColumn, DataTableSortState } from "./data-table-types";
@@ -141,6 +141,29 @@ describe("DataTable", () => {
       "data-row-id",
       "account-alpha",
     );
+    expect(screen.getByRole("row", { name: /Alpha/ })).toHaveAttribute("aria-selected", "true");
+  });
+
+  it("supports reusable selected-row styling without rendering checkbox controls", () => {
+    render(
+      <DataTable
+        caption="Selected account"
+        columns={columns}
+        rows={rows}
+        getRowId={(row) => row.id}
+        selection={{
+          showSelectionColumn: false,
+          selectedRowIds: ["account-alpha"],
+          getSelectionLabel: (row) => `${row.name} account`,
+          onRowSelectionChange: vi.fn(),
+          onVisibleRowsSelectionChange: vi.fn(),
+        }}
+      />,
+    );
+
+    expect(screen.queryByRole("checkbox")).not.toBeInTheDocument();
+    expect(screen.getByRole("row", { name: /Alpha/ })).toHaveAttribute("data-selected", "true");
+    expect(screen.getByRole("row", { name: /Alpha/ })).toHaveAttribute("aria-selected", "true");
   });
 
   it("selects all visible rows and clears them without selecting the row itself", async () => {

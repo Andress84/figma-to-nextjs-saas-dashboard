@@ -357,6 +357,210 @@ test("passes Analytics WCAG smoke tests on desktop and mobile", async ({ page })
   }
 });
 
+test("renders and operates the approved Customers dashboard", async ({ page }) => {
+  const consoleProblems: string[] = [];
+  page.on("console", (message) => {
+    if (message.type() === "error" || message.type() === "warning") {
+      consoleProblems.push(message.text());
+    }
+  });
+
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/customers");
+
+  await expect(page).toHaveTitle("Customers — Subtera");
+  await expect(page.getByRole("heading", { level: 1, name: "Customers" })).toBeVisible();
+  await expect(
+    page.getByRole("navigation", { name: "Breadcrumb" }).getByText("Customers"),
+  ).toHaveAttribute("aria-current", "page");
+  await expect(
+    page.getByRole("navigation", { name: "Primary navigation" }).getByRole("link", {
+      name: "Customers",
+    }),
+  ).toHaveAttribute("aria-current", "page");
+  await expect(page.getByRole("region", { name: "Customer metrics" })).toBeVisible();
+  const table = page.getByRole("table", {
+    name: "Customer accounts with subscription status, recurring value and recent activity",
+  });
+  await expect(table).toBeVisible();
+  await expect(table.getByRole("rowheader")).toHaveCount(8);
+  await expect(table.getByRole("rowheader", { name: /Olivia Chen/ })).toBeVisible();
+  await expect(table.getByRole("row", { name: /Marco Ruiz/ })).toHaveAttribute(
+    "aria-selected",
+    "true",
+  );
+  await expect(page.getByText("Showing 1–8 of 3,214 customers")).toBeVisible();
+
+  const search = page.getByRole("searchbox", { name: "Search customers" });
+  await search.fill("BRIGHTLAYER");
+  await expect(search).toHaveValue("BRIGHTLAYER");
+  await expect(table.getByRole("rowheader")).toHaveCount(1);
+  await expect(table.getByRole("rowheader", { name: /Noah Williams/ })).toBeVisible();
+  await expect(table.getByRole("rowheader", { name: /Olivia Chen/ })).toHaveCount(0);
+  await search.fill("");
+
+  const activeTab = page.getByRole("tab", { name: "Active" });
+  await activeTab.focus();
+  await page.keyboard.press("Home");
+  await expect(page.getByRole("tab", { name: "All" })).toBeFocused();
+  await page.keyboard.press("ArrowRight");
+  await expect(activeTab).toHaveAttribute("aria-selected", "true");
+  const riskFilter = page.getByRole("button", { name: /At risk: 96/ });
+  await riskFilter.click();
+  await expect(riskFilter).toHaveAttribute("aria-pressed", "true");
+  await expect(table.getByRole("rowheader", { name: /Marco Ruiz/ })).toBeVisible();
+  await expect(table.getByText("Active")).toBeVisible();
+  await expect(table.getByRole("rowheader")).toHaveCount(1);
+
+  const downloadPromise = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Export CSV" }).click();
+  const download = await downloadPromise;
+  expect(download.suggestedFilename()).toBe("subtera-customers-2026-07-14.csv");
+  await expect(page.locator(".customer-page-actions [role='status']")).toHaveText(
+    "Downloaded subtera-customers-2026-07-14.csv with 1 customer.",
+  );
+  expect(consoleProblems).toEqual([]);
+});
+
+test("supports Customers popovers, row actions, pagination, and demo-only actions", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/customers");
+
+  const filterTrigger = page.getByRole("button", { name: "Filters" });
+  await filterTrigger.click();
+  const dialog = page.getByRole("dialog", { name: "Filter customer accounts" });
+  await dialog.getByRole("combobox", { name: "Plan" }).selectOption("growth");
+  await expect(
+    page
+      .getByRole("table", {
+        name: "Customer accounts with subscription status, recurring value and recent activity",
+      })
+      .getByRole("rowheader"),
+  ).toHaveCount(2);
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("button", { name: "Filters (1)" })).toBeFocused();
+
+  await page.getByRole("button", { name: "Filters (1)" }).click();
+  await page.getByRole("heading", { level: 1, name: "Customers" }).click();
+  await expect(page.getByRole("dialog", { name: "Filter customer accounts" })).toBeHidden();
+  await expect(page.getByRole("button", { name: "Filters (1)" })).toBeFocused();
+
+  await page.getByRole("button", { name: "Filters (1)" }).click();
+  await page
+    .getByRole("dialog", { name: "Filter customer accounts" })
+    .getByRole("button", { name: "Clear" })
+    .click();
+  await page.keyboard.press("Escape");
+
+  const rowActionTrigger = page.getByRole("button", { name: "Actions for Marco Ruiz account" });
+  await rowActionTrigger.focus();
+  await page.keyboard.press("ArrowDown");
+  await expect(page.getByRole("menuitem", { name: "View account (demo)" })).toBeFocused();
+  await page.keyboard.press("Escape");
+  await expect(rowActionTrigger).toBeFocused();
+
+  await page.getByRole("button", { name: "Go to next page" }).click();
+  await expect(page.getByText("Records not loaded in this static demo")).toBeVisible();
+  await page.getByRole("combobox", { name: "Rows per page" }).selectOption("16");
+  await expect(page.getByRole("button", { name: "Go to page 1" })).toHaveAttribute(
+    "aria-current",
+    "page",
+  );
+
+  await page.getByRole("button", { name: "Add customer" }).click();
+  await expect(page.locator(".customer-page-actions [role='status']")).toHaveText(
+    "Add customer is a non-persistent demo action. No customer record was created.",
+  );
+  await page.getByRole("button", { name: "Refresh" }).click();
+  await expect(page.locator(".customer-page-actions [role='status']")).toHaveText(
+    "Customer records refreshed. Deterministic demo data is unchanged.",
+  );
+});
+
+test("keeps Customers responsive with contained scrolling at every required viewport", async ({
+  page,
+}) => {
+  const consoleProblems: string[] = [];
+  page.on("console", (message) => {
+    if (message.type() === "error" || message.type() === "warning") {
+      consoleProblems.push(message.text());
+    }
+  });
+  const viewports = [
+    { width: 1440, height: 900 },
+    { width: 1200, height: 900 },
+    { width: 1024, height: 800 },
+    { width: 768, height: 800 },
+    { width: 390, height: 844 },
+    { width: 320, height: 700 },
+  ] as const;
+
+  await page.goto("/customers");
+
+  for (const viewport of viewports) {
+    await page.setViewportSize(viewport);
+    await expect(page.getByRole("heading", { level: 1, name: "Customers" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Add customer" })).toBeVisible();
+    await expect(page.getByRole("searchbox", { name: "Search customers" })).toBeVisible();
+    await expect(page.getByRole("tab", { name: "Past due" })).toBeAttached();
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth > document.documentElement.clientWidth,
+      ),
+    ).toBe(false);
+
+    if (viewport.width < 1024) {
+      await expect(page.locator(".mobile-navigation")).toBeVisible();
+      await expect(page.getByRole("complementary")).toBeHidden();
+    }
+  }
+
+  const tableViewport = page.getByRole("region", {
+    name: "Scrollable customer accounts table",
+  });
+  expect(await tableViewport.evaluate((element) => element.scrollWidth > element.clientWidth)).toBe(
+    true,
+  );
+  expect(
+    await page
+      .getByRole("region", { name: "Customer lifecycle tabs" })
+      .evaluate((element) => element.scrollWidth > element.clientWidth),
+  ).toBe(true);
+  const contentWidth = await page
+    .locator(".page-container")
+    .evaluate((element) => Number.parseFloat(window.getComputedStyle(element).width));
+  const searchBounds = await page.locator(".customer-page-search").boundingBox();
+  const addBounds = await page.getByRole("button", { name: "Add customer" }).boundingBox();
+  expect(searchBounds?.width).toBeGreaterThan(contentWidth - 40);
+  expect(addBounds?.height).toBeGreaterThanOrEqual(44);
+
+  const { drawer } = await openMobileDrawer(page);
+  await expect(
+    drawer.getByRole("navigation", { name: "Mobile primary navigation" }).getByRole("link", {
+      name: "Customers",
+    }),
+  ).toHaveAttribute("aria-current", "page");
+  await page.keyboard.press("Escape");
+  expect(consoleProblems).toEqual([]);
+});
+
+test("passes Customers WCAG smoke tests on desktop and mobile", async ({ page }) => {
+  for (const viewport of [
+    { width: 1440, height: 900 },
+    { width: 390, height: 844 },
+  ]) {
+    await page.setViewportSize(viewport);
+    await page.goto("/customers");
+
+    const results = await new AxeBuilder({ page })
+      .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
+      .analyze();
+    expect(results.violations).toEqual([]);
+  }
+});
+
 test("passes an automated WCAG accessibility smoke test", async ({ page }) => {
   await page.goto("/");
 

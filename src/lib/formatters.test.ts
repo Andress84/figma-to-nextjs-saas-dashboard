@@ -9,6 +9,7 @@ import {
   formatPercentagePoints,
   formatPercent,
   formatSignedPercent,
+  formatTableDate,
   formatTransactionAmount,
 } from "./formatters";
 
@@ -30,6 +31,7 @@ describe("dashboard formatters", () => {
   it("formats approved dates in UTC independently of the developer time zone", () => {
     expect(formatDateRange("2026-06-15", "2026-07-14")).toBe("Jun 15 – Jul 14, 2026");
     expect(formatDate("2026-05-18")).toBe("May 18, 2026");
+    expect(formatTableDate("2026-04-02")).toBe("Apr 02, 2026");
     expect(formatDateTime("2026-07-14T10:42:00Z")).toBe("Jul 14, 10:42");
   });
 });

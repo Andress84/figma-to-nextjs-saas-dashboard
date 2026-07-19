@@ -15,6 +15,7 @@ const badgeVariantByTone = {
   positive: "success",
   negative: "error",
   improvement: "success",
+  information: "information",
   neutral: "neutral",
 } as const satisfies Record<TrendTone, BadgeVariant>;
 
@@ -22,6 +23,7 @@ const defaultIconByTone = {
   positive: <ArrowUpRight size={13} strokeWidth={2.2} />,
   negative: <TrendingDown size={13} strokeWidth={2.2} />,
   improvement: <ArrowDownRight size={13} strokeWidth={2.2} />,
+  information: <Minus size={13} strokeWidth={2.2} />,
   neutral: <Minus size={13} strokeWidth={2.2} />,
 } as const satisfies Record<TrendTone, ReactNode>;
 

@@ -13,6 +13,13 @@ export const CUSTOMER_SUMMARY = {
 export const CUSTOMER_RECORD_TOTAL = CUSTOMER_ACCOUNT_TOTALS.current;
 export const CUSTOMER_ROWS_PER_PAGE = 8;
 
+export const CUSTOMER_METRIC_SPARKLINES = {
+  "total-customers": [2_926, 2_988, 3_041, 3_118, CUSTOMER_ACCOUNT_TOTALS.current],
+  "active-subscribers": [2_705, 2_731, 2_768, 2_811, SUBSCRIPTION_FLOW.endingActive],
+  "trial-accounts": [178, 189, 207, 201, 214],
+  "at-risk-customers": [108, 106, 102, 99, 96],
+} as const;
+
 export const CUSTOMERS = [
   {
     id: "customer-olivia-chen",
@@ -22,6 +29,7 @@ export const CUSTOMERS = [
     status: "active",
     atRisk: false,
     lastActivityLabel: "12 min ago",
+    lastActivityMinutesAgo: 12,
     joinedDate: "2026-05-18",
   },
   {
@@ -32,6 +40,7 @@ export const CUSTOMERS = [
     status: "active",
     atRisk: false,
     lastActivityLabel: "34 min ago",
+    lastActivityMinutesAgo: 34,
     joinedDate: "2026-04-02",
   },
   {
@@ -42,6 +51,7 @@ export const CUSTOMERS = [
     status: "trial",
     atRisk: false,
     lastActivityLabel: "1 hr ago",
+    lastActivityMinutesAgo: 60,
     joinedDate: "2026-07-08",
   },
   {
@@ -52,6 +62,7 @@ export const CUSTOMERS = [
     status: "active",
     atRisk: true,
     lastActivityLabel: "6 hrs ago",
+    lastActivityMinutesAgo: 360,
     joinedDate: "2026-03-21",
   },
   {
@@ -62,6 +73,7 @@ export const CUSTOMERS = [
     status: "active",
     atRisk: false,
     lastActivityLabel: "Yesterday",
+    lastActivityMinutesAgo: 1_440,
     joinedDate: "2026-02-14",
   },
   {
@@ -72,6 +84,7 @@ export const CUSTOMERS = [
     status: "past-due",
     atRisk: false,
     lastActivityLabel: "2 days ago",
+    lastActivityMinutesAgo: 2_880,
     joinedDate: "2026-01-29",
   },
   {
@@ -82,6 +95,7 @@ export const CUSTOMERS = [
     status: "active",
     atRisk: false,
     lastActivityLabel: "3 days ago",
+    lastActivityMinutesAgo: 4_320,
     joinedDate: "2025-12-11",
   },
   {
@@ -92,6 +106,7 @@ export const CUSTOMERS = [
     status: "churned",
     atRisk: false,
     lastActivityLabel: "8 days ago",
+    lastActivityMinutesAgo: 11_520,
     joinedDate: "2025-11-06",
   },
 ] as const satisfies readonly CustomerRecord[];

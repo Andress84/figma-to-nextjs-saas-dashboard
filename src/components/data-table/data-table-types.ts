@@ -30,6 +30,7 @@ export type DataTableColumn<TData, TColumnId extends string> =
     });
 
 export interface DataTableSelectionState<TRowId extends DataTableRowId> {
+  readonly showSelectionColumn?: boolean;
   readonly selectedRowIds: readonly TRowId[];
 }
 

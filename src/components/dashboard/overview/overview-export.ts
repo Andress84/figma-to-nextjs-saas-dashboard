@@ -1,4 +1,5 @@
 import { PLANS_BY_ID } from "@/data/mock/plans";
+import { rowsToCsv } from "@/lib/csv";
 import { formatDateTime, formatTransactionAmount } from "@/lib/formatters";
 import type { TransactionRecord } from "@/types/dashboard";
 
@@ -11,10 +12,6 @@ const TRANSACTION_STATUS_LABELS = {
   failed: "Failed",
 } as const satisfies Record<TransactionRecord["status"], string>;
 
-function escapeCsvValue(value: string) {
-  return /[",\r\n]/.test(value) ? `"${value.replaceAll('"', '""')}"` : value;
-}
-
 export function buildOverviewTransactionsCsv(transactions: readonly TransactionRecord[]) {
   const rows = transactions.map((transaction) => [
     transaction.customerName,
@@ -25,7 +22,5 @@ export function buildOverviewTransactionsCsv(transactions: readonly TransactionR
     TRANSACTION_STATUS_LABELS[transaction.status],
   ]);
 
-  return [["Customer", "Plan", "Date", "Payment method", "Amount", "Status"], ...rows]
-    .map((row) => row.map(escapeCsvValue).join(","))
-    .join("\r\n");
+  return rowsToCsv([["Customer", "Plan", "Date", "Payment method", "Amount", "Status"], ...rows]);
 }

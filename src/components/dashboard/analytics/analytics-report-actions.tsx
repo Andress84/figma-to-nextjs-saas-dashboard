@@ -7,11 +7,8 @@ import { Select } from "@/components/ui/select";
 import type { AnalyticsChurnFilter } from "@/data/mock/analytics";
 import { PLAN_DEFINITIONS } from "@/data/mock/plans";
 import type { PlanId } from "@/types/dashboard";
-import {
-  ANALYTICS_EXPORT_FILE_NAME,
-  buildAnalyticsReportCsv,
-  downloadCsv,
-} from "./analytics-export";
+import { downloadCsv } from "@/lib/csv";
+import { ANALYTICS_EXPORT_FILE_NAME, buildAnalyticsReportCsv } from "./analytics-export";
 import { useAnalyticsReport } from "./analytics-report-context";
 
 interface AnalyticsReportActionsProps {
