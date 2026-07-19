@@ -71,7 +71,7 @@ describe("RowActions", () => {
     expect(screen.queryByRole("menu")).not.toBeInTheDocument();
   });
 
-  it("positions the portalled menu inside the viewport and flips above near the lower edge", async () => {
+  it("positions the portalled menu inside the viewport and keeps it stable while scrolling", async () => {
     const user = userEvent.setup();
     vi.spyOn(HTMLButtonElement.prototype, "getBoundingClientRect").mockReturnValue({
       bottom: 756,
@@ -96,6 +96,7 @@ describe("RowActions", () => {
     expect(Number.parseFloat(menu.style.top)).toBeGreaterThanOrEqual(8);
 
     fireEvent.scroll(window);
-    expect(screen.queryByRole("menu")).not.toBeInTheDocument();
+    expect(screen.getByRole("menu")).toBeInTheDocument();
+    expect(screen.getByRole("menuitem", { name: "View details" })).toHaveFocus();
   });
 });

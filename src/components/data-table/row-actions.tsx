@@ -117,7 +117,11 @@ export function RowActions<TData>({ actions, row, rowLabel }: Readonly<RowAction
     }
 
     function handleViewportChange() {
-      setIsOpen(false);
+      const trigger = triggerRef.current;
+
+      if (trigger) {
+        setPosition(getMenuPosition(trigger, actions.length));
+      }
     }
 
     document.addEventListener("pointerdown", handleDocumentPointerDown);
@@ -131,7 +135,7 @@ export function RowActions<TData>({ actions, row, rowLabel }: Readonly<RowAction
       window.removeEventListener("resize", handleViewportChange);
       window.removeEventListener("scroll", handleViewportChange, true);
     };
-  }, [closeMenu, isOpen]);
+  }, [actions.length, closeMenu, isOpen]);
 
   function moveMenuFocus(event: KeyboardEvent<HTMLDivElement>) {
     const menuItems = [

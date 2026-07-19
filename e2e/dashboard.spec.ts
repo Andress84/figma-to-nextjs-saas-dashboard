@@ -561,6 +561,214 @@ test("passes Customers WCAG smoke tests on desktop and mobile", async ({ page })
   }
 });
 
+test("renders and operates the approved Subscriptions dashboard", async ({ page }) => {
+  const consoleProblems: string[] = [];
+  page.on("console", (message) => {
+    if (message.type() === "error" || message.type() === "warning") {
+      consoleProblems.push(message.text());
+    }
+  });
+
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/subscriptions");
+
+  await expect(page).toHaveTitle("Subscriptions — Subtera");
+  await expect(page.getByRole("heading", { level: 1, name: "Subscriptions" })).toBeVisible();
+  await expect(
+    page.getByRole("navigation", { name: "Primary navigation" }).getByRole("link", {
+      name: "Subscriptions",
+    }),
+  ).toHaveAttribute("aria-current", "page");
+  await expect(page.getByRole("region", { name: "Subscription metrics" })).toBeVisible();
+  await expect(page.getByText("2,846 active · $84,720 MRR · 100% subscriber share")).toBeVisible();
+  const statusFigure = page.getByRole("figure", { name: "Subscription Status" });
+  await expect(statusFigure).toBeVisible();
+  await expect(statusFigure.locator(".chart-donut-total")).toHaveText("3,164");
+  await expect(statusFigure.getByText("Churned during selected period")).toBeVisible();
+  await expect(statusFigure.getByText("104")).toBeVisible();
+
+  const table = page.getByRole("table", {
+    name: "All subscriptions with plan, billing cycle, lifecycle status, dates, and amount",
+  });
+  await expect(table).toBeVisible();
+  await expect(table.getByRole("rowheader")).toHaveCount(8);
+  await expect(table.getByRole("rowheader", { name: /Olivia Chen/ })).toBeVisible();
+  await expect(table.getByRole("rowheader", { name: /Liam Carter/ })).toBeVisible();
+  await expect(table.getByText("Trialing")).toBeVisible();
+  await expect(table.getByText("Past due")).toBeVisible();
+  await expect(table.getByText("Canceled")).toBeVisible();
+  await expect(table.getByRole("row", { name: /Sophia Nguyen/ })).toHaveAttribute(
+    "aria-selected",
+    "true",
+  );
+  await expect(page.getByText("Showing 1–8 of 3,268 subscription records")).toBeVisible();
+  expect((await page.locator("main").innerText()).toLocaleLowerCase()).not.toContain("undefined");
+  expect((await page.locator("main").innerText()).toLocaleLowerCase()).not.toContain("null");
+  expect(consoleProblems).toEqual([]);
+});
+
+test("supports Subscriptions search, composed filters, sorting, export, actions, and pagination", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/subscriptions");
+  const table = page.getByRole("table", {
+    name: "All subscriptions with plan, billing cycle, lifecycle status, dates, and amount",
+  });
+  const search = page.getByRole("searchbox", { name: "Search subscriptions" });
+
+  await search.fill("TEAMS");
+  await expect(table.getByRole("rowheader")).toHaveCount(2);
+  await expect(table.getByRole("rowheader", { name: /Noah Williams/ })).toBeVisible();
+  await expect(table.getByRole("rowheader", { name: /Sophia Nguyen/ })).toBeVisible();
+  await search.fill("");
+
+  const filterTrigger = page.getByRole("button", { name: "Filters" });
+  await filterTrigger.click();
+  const filterDialog = page.getByRole("dialog", { name: "Filter subscriptions" });
+  await filterDialog.getByRole("combobox", { name: "Plan" }).selectOption("growth");
+  await filterDialog.getByRole("combobox", { name: "Status" }).selectOption("active");
+  await expect(table.getByRole("rowheader")).toHaveCount(2);
+  await expect(table.getByRole("rowheader", { name: /Olivia Chen/ })).toBeVisible();
+  await expect(table.getByRole("rowheader", { name: /Maya Patel/ })).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("button", { name: "Filters (2)" })).toBeFocused();
+
+  await table.getByRole("button", { name: /Amount, not sorted/ }).click();
+  await expect(
+    table.getByRole("columnheader", { name: /Amount, sorted ascending/ }),
+  ).toHaveAttribute("aria-sort", "ascending");
+  const downloadPromise = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Export" }).click();
+  const download = await downloadPromise;
+  expect(download.suggestedFilename()).toBe("subtera-subscriptions-2026-07-14.csv");
+  await expect(page.locator(".subscriptions-page > [role='status']")).toHaveText(
+    "Downloaded subtera-subscriptions-2026-07-14.csv with 2 subscriptions.",
+  );
+
+  await page.getByRole("combobox", { name: "Plan" }).selectOption("all");
+  await page.getByRole("combobox", { name: "Status" }).selectOption("all");
+  const rowActionTrigger = page.getByRole("button", {
+    name: "Actions for Sophia Nguyen subscription",
+  });
+  await rowActionTrigger.focus();
+  await page.keyboard.press("ArrowDown");
+  await expect(page.getByRole("menuitem", { name: "View subscription (demo)" })).toBeFocused();
+  await page.keyboard.press("ArrowDown");
+  await expect(page.getByRole("menuitem", { name: "Clear selection" })).toBeFocused();
+  await page.keyboard.press("Enter");
+  await expect(rowActionTrigger).toBeFocused();
+  await expect(table.getByRole("row", { name: /Sophia Nguyen/ })).toHaveAttribute(
+    "aria-selected",
+    "false",
+  );
+
+  await page.getByRole("button", { name: "Go to next page" }).click();
+  await expect(page.getByText("Records not loaded in this static demo")).toBeVisible();
+  await expect(page.getByText(/Page 2 of 409/)).toBeVisible();
+  await page.getByRole("button", { name: "Go to previous page" }).click();
+  await expect(table.getByRole("rowheader")).toHaveCount(8);
+
+  await page.getByRole("button", { name: "Add subscription" }).click();
+  await expect(page.locator(".subscriptions-page > [role='status']")).toHaveText(
+    "Add subscription is a non-persistent demo action. No subscription record was created.",
+  );
+});
+
+test("keeps Subscriptions responsive with contained table scrolling and mobile navigation", async ({
+  page,
+}) => {
+  const consoleProblems: string[] = [];
+  page.on("console", (message) => {
+    if (message.type() === "error" || message.type() === "warning") {
+      consoleProblems.push(message.text());
+    }
+  });
+  const viewports = [
+    { width: 1440, height: 900 },
+    { width: 1200, height: 900 },
+    { width: 1100, height: 800 },
+    { width: 1024, height: 800 },
+    { width: 768, height: 800 },
+    { width: 390, height: 844 },
+    { width: 320, height: 700 },
+  ] as const;
+
+  await page.goto("/subscriptions");
+
+  for (const viewport of viewports) {
+    await page.setViewportSize(viewport);
+    await expect(page.getByRole("heading", { level: 1, name: "Subscriptions" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Add subscription" })).toBeVisible();
+    await expect(page.getByRole("searchbox", { name: "Search subscriptions" })).toBeAttached();
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth > document.documentElement.clientWidth,
+      ),
+    ).toBe(false);
+
+    const addBounds = await page.getByRole("button", { name: "Add subscription" }).boundingBox();
+    expect(addBounds?.height).toBeGreaterThanOrEqual(viewport.width < 1024 ? 44 : 40);
+
+    if (viewport.width === 1200) {
+      expect(
+        await page
+          .locator(".subscriptions-page-header")
+          .evaluate((element) => Number.parseFloat(window.getComputedStyle(element).height)),
+      ).toBeLessThan(180);
+    }
+
+    if (viewport.width < 1024) {
+      await expect(page.locator(".mobile-navigation")).toBeVisible();
+      await expect(page.getByRole("complementary")).toBeHidden();
+    }
+  }
+
+  const tableViewport = page.getByRole("region", { name: "Scrollable subscriptions table" });
+  const planViewport = page.getByRole("region", {
+    name: "Scrollable subscription plan performance table",
+  });
+  expect(await tableViewport.evaluate((element) => element.scrollWidth > element.clientWidth)).toBe(
+    true,
+  );
+  expect(await planViewport.evaluate((element) => element.scrollWidth > element.clientWidth)).toBe(
+    true,
+  );
+
+  const filterTrigger = page.getByRole("button", { name: "Filters" });
+  await filterTrigger.click();
+  const filterDialog = page.getByRole("dialog", { name: "Filter subscriptions" });
+  const filterBounds = await filterDialog.boundingBox();
+  expect(filterBounds?.x).toBeGreaterThanOrEqual(0);
+  expect((filterBounds?.x ?? 0) + (filterBounds?.width ?? 0)).toBeLessThanOrEqual(320);
+  await page.keyboard.press("Escape");
+  await expect(filterTrigger).toBeFocused();
+
+  const { drawer } = await openMobileDrawer(page);
+  await expect(
+    drawer.getByRole("navigation", { name: "Mobile primary navigation" }).getByRole("link", {
+      name: "Subscriptions",
+    }),
+  ).toHaveAttribute("aria-current", "page");
+  await page.keyboard.press("Escape");
+  expect(consoleProblems).toEqual([]);
+});
+
+test("passes Subscriptions WCAG smoke tests on desktop and mobile", async ({ page }) => {
+  for (const viewport of [
+    { width: 1440, height: 900 },
+    { width: 390, height: 844 },
+  ]) {
+    await page.setViewportSize(viewport);
+    await page.goto("/subscriptions");
+
+    const results = await new AxeBuilder({ page })
+      .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
+      .analyze();
+    expect(results.violations).toEqual([]);
+  }
+});
+
 test("passes an automated WCAG accessibility smoke test", async ({ page }) => {
   await page.goto("/");
 

@@ -22,6 +22,13 @@ export const SUBSCRIPTION_STATUS_SUMMARY = {
 export const SUBSCRIPTION_RECORD_TOTAL = 3_268;
 export const SUBSCRIPTION_ROWS_PER_PAGE = 8;
 
+export const SUBSCRIPTION_METRIC_SPARKLINES = {
+  "active-subscriptions": [2_705, 2_741, 2_779, 2_817, SUBSCRIPTION_FLOW.endingActive],
+  "monthly-recurring-revenue": [78_140, 79_420, 80_890, 82_360, 84_720],
+  trialing: [178, 189, 207, 201, 214],
+  "churn-rate": [4.27, 4.19, 4.08, 3.96, RETENTION_METRICS.currentChurnRate],
+} as const;
+
 export const SUBSCRIPTIONS = [
   {
     id: "subscription-olivia-chen",

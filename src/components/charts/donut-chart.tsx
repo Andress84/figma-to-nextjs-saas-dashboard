@@ -15,6 +15,7 @@ export interface DonutChartProps {
   readonly className?: string;
   readonly data: readonly DonutChartSegment[];
   readonly description?: string;
+  readonly footer?: ReactNode;
   readonly height?: "compact" | "standard" | "large";
   readonly legend?: ReactNode;
   readonly metric?: ReactNode;
@@ -39,6 +40,7 @@ export function DonutChart({
   className,
   data,
   description,
+  footer,
   height = "standard",
   legend,
   metric,
@@ -62,6 +64,7 @@ export function DonutChart({
       actions={actions}
       className={className}
       description={description}
+      footer={footer}
       height={height}
       isEmpty={chartData.length === 0 || total === 0}
       metric={metric}
