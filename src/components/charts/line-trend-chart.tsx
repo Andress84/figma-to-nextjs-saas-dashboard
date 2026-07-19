@@ -29,6 +29,7 @@ export interface LineTrendChartProps<TData extends object> {
   readonly className?: string;
   readonly data: readonly TData[];
   readonly description?: string;
+  readonly footer?: ReactNode;
   readonly height?: "compact" | "standard" | "large";
   readonly labelHeading?: string;
   readonly labelKey: Extract<keyof TData, string>;
@@ -45,6 +46,7 @@ export function LineTrendChart<TData extends object>({
   className,
   data,
   description,
+  footer,
   height = "standard",
   labelHeading,
   labelKey,
@@ -66,6 +68,7 @@ export function LineTrendChart<TData extends object>({
       actions={actions}
       className={className}
       description={description}
+      footer={footer}
       height={height}
       isEmpty={isEmpty}
       metric={metric}
@@ -93,6 +96,7 @@ export function LineTrendChart<TData extends object>({
           visible={summaryVisible}
         />
       }
+      summaryVisible={summaryVisible}
     >
       <div className="chart-canvas" data-animation-active={String(animationActive)}>
         <ResponsiveContainer width="100%" height="100%" minWidth={0}>

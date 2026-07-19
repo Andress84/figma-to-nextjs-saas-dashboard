@@ -1,5 +1,10 @@
-import { DashboardOverview } from "@/features/analytics/dashboard-overview";
+import type { Metadata } from "next";
+import { OverviewDashboard } from "@/components/dashboard/overview/overview-dashboard";
+
+export const metadata: Metadata = {
+  title: "Overview",
+};
 
 export default function DashboardPage() {
-  return <DashboardOverview />;
+  return <OverviewDashboard />;
 }

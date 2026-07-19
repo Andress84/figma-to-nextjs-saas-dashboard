@@ -16,6 +16,7 @@ export interface DonutChartProps {
   readonly data: readonly DonutChartSegment[];
   readonly description?: string;
   readonly height?: "compact" | "standard" | "large";
+  readonly legend?: ReactNode;
   readonly metric?: ReactNode;
   readonly segmentValueFormat?: ChartValueFormat;
   readonly summaryVisible?: boolean;
@@ -39,6 +40,7 @@ export function DonutChart({
   data,
   description,
   height = "standard",
+  legend,
   metric,
   segmentValueFormat = "count",
   summaryVisible = false,
@@ -65,14 +67,16 @@ export function DonutChart({
       metric={metric}
       title={title}
       legend={
-        <ChartLegend
-          items={chartData.map((segment) => ({
-            color: segment.color,
-            label: segment.label,
-            marker: "segment",
-            value: formatChartValue(segment.value, segmentValueFormat),
-          }))}
-        />
+        legend ?? (
+          <ChartLegend
+            items={chartData.map((segment) => ({
+              color: segment.color,
+              label: segment.label,
+              marker: "segment",
+              value: formatChartValue(segment.value, segmentValueFormat),
+            }))}
+          />
+        )
       }
       summary={
         <ChartSummary
@@ -84,6 +88,7 @@ export function DonutChart({
           visible={summaryVisible}
         />
       }
+      summaryVisible={summaryVisible}
     >
       <div
         className="chart-canvas chart-canvas--donut"

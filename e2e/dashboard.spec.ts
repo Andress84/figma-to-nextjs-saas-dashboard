@@ -2,7 +2,7 @@ import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 
 const routes = [
-  { heading: "Dashboard foundation", label: "Overview", path: "/" },
+  { heading: "Overview", label: "Overview", path: "/" },
   { heading: "Analytics", label: "Analytics", path: "/analytics" },
   { heading: "Customers", label: "Customers", path: "/customers" },
   { heading: "Subscriptions", label: "Subscriptions", path: "/subscriptions" },
@@ -59,17 +59,170 @@ test("renders the approved shared desktop shell content", async ({ page }) => {
   await page.goto("/");
 
   const sidebar = page.getByRole("complementary");
+  const desktopSearch = sidebar.getByRole("searchbox", { name: "Search workspace" });
 
   await expect(sidebar.getByRole("link", { name: "Subtera overview" })).toBeVisible();
   await expect(sidebar.getByText("Acme Cloud", { exact: true })).toBeVisible();
   await expect(sidebar.getByText("Maya Chen", { exact: true })).toBeVisible();
   await expect(sidebar.getByText("Workspace Admin", { exact: true })).toBeVisible();
+  await expect(desktopSearch).toHaveAttribute("placeholder", "Search");
+  await expect(desktopSearch).toHaveValue("");
+  expect(await sidebar.innerText()).not.toContain("null");
   await expect(page.getByRole("button", { name: "Help" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Notifications" })).toBeVisible();
   await expect(page.getByText("Phase 1", { exact: true })).toHaveCount(0);
   await expect(page.getByText("Technical foundation", { exact: true })).toHaveCount(0);
   await expect(page.getByText("Portfolio project", { exact: true })).toHaveCount(0);
   await expect(page.getByText("Local demo", { exact: true })).toHaveCount(0);
+});
+
+test("renders and operates the approved Overview dashboard", async ({ page }) => {
+  const consoleErrors: string[] = [];
+  page.on("console", (message) => {
+    if (message.type() === "error") {
+      consoleErrors.push(message.text());
+    }
+  });
+
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+
+  await expect(page.getByRole("heading", { level: 1, name: "Overview" })).toBeVisible();
+  await expect(page.getByRole("region", { name: "Overview metrics" })).toBeVisible();
+  await expect(page.getByRole("figure", { name: "Revenue Overview" })).toBeVisible();
+  await expect(page.getByRole("figure", { name: "Customer Growth" })).toBeVisible();
+  await expect(page.getByRole("figure", { name: "Subscriptions by Plan" })).toBeVisible();
+  await expect(page.getByRole("table", { name: "Recent subscription transactions" })).toBeVisible();
+
+  const revenueFigure = page.getByRole("figure", { name: "Revenue Overview" });
+  await revenueFigure.getByRole("radio", { name: "MRR" }).click();
+  await expect(revenueFigure.getByRole("radio", { name: "MRR" })).toBeChecked();
+  await expect(revenueFigure.locator(".chart-legend-label").getByText("Current MRR")).toBeVisible();
+
+  const filterTrigger = page.getByRole("button", { name: "Filters" });
+  await filterTrigger.click();
+  const filterDialog = page.getByRole("dialog", { name: "Filter recent transactions" });
+  await filterDialog.getByRole("combobox", { name: "Status" }).selectOption("refunded");
+  await expect(filterDialog.getByText("1 of 5 shown")).toBeVisible();
+  await expect(page.getByRole("rowheader", { name: /Marco Ruiz/ })).toBeVisible();
+  await expect(page.getByRole("rowheader", { name: /Olivia Chen/ })).toHaveCount(0);
+  await page.keyboard.press("Escape");
+  await expect(filterDialog).toBeHidden();
+  await expect(filterTrigger).toBeFocused();
+
+  await expect(page.getByRole("link", { name: "View details" })).toHaveAttribute(
+    "href",
+    "/subscriptions",
+  );
+  await expect(page.getByRole("link", { name: "View all" }).first()).toHaveAttribute(
+    "href",
+    "/customers",
+  );
+  expect(consoleErrors).toEqual([]);
+});
+
+test("contains the Overview layout at every required integration viewport", async ({ page }) => {
+  const consoleProblems: string[] = [];
+  page.on("console", (message) => {
+    if (message.type() === "error" || message.type() === "warning") {
+      consoleProblems.push(message.text());
+    }
+  });
+  const viewports = [
+    { width: 1440, height: 900 },
+    { width: 1200, height: 900 },
+    { width: 1024, height: 800 },
+    { width: 768, height: 800 },
+    { width: 390, height: 844 },
+    { width: 320, height: 700 },
+  ] as const;
+
+  await page.goto("/");
+
+  for (const viewport of viewports) {
+    await page.setViewportSize(viewport);
+    await expect(page.getByRole("heading", { level: 1, name: "Overview" })).toBeVisible();
+    await expect(page.getByRole("figure", { name: "Revenue Overview" })).toBeVisible();
+
+    const hasHorizontalOverflow = await page.evaluate(
+      () => document.documentElement.scrollWidth > document.documentElement.clientWidth,
+    );
+    expect(hasHorizontalOverflow).toBe(false);
+  }
+
+  expect(consoleProblems).toEqual([]);
+});
+
+test("keeps the approved Overview actions available on mobile", async ({ page }) => {
+  const consoleProblems: string[] = [];
+  page.on("console", (message) => {
+    if (message.type() === "error" || message.type() === "warning") {
+      consoleProblems.push(message.text());
+    }
+  });
+
+  await page.goto("/");
+
+  for (const viewport of [
+    { width: 390, height: 844 },
+    { width: 320, height: 700 },
+  ]) {
+    await page.setViewportSize(viewport);
+
+    const dateControl = page.getByRole("button", {
+      name: /Reporting period: Jun 15 – Jul 14, 2026/,
+    });
+    const filterAction = page.getByRole("button", { name: "Filters" });
+    const exportAction = page.getByRole("button", { name: "Export" });
+    const contentWidth = await page
+      .locator(".page-container")
+      .evaluate((element) => Number.parseFloat(window.getComputedStyle(element).width));
+    const dateBounds = await dateControl.boundingBox();
+    const filterBounds = await filterAction.boundingBox();
+    const exportBounds = await exportAction.boundingBox();
+
+    await expect(dateControl).toBeVisible();
+    await expect(filterAction).toBeVisible();
+    await expect(exportAction).toBeVisible();
+    expect(dateBounds?.width).toBeGreaterThan(contentWidth - 40);
+    expect(filterBounds?.height).toBeGreaterThanOrEqual(44);
+    expect(exportBounds?.height).toBeGreaterThanOrEqual(44);
+    expect(filterBounds?.y).toBe(exportBounds?.y);
+    expect(Math.abs((filterBounds?.width ?? 0) - (exportBounds?.width ?? 0))).toBeLessThanOrEqual(
+      1,
+    );
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth > document.documentElement.clientWidth,
+      ),
+    ).toBe(false);
+  }
+
+  const filterAction = page.getByRole("button", { name: "Filters" });
+  await filterAction.click();
+  const filterDialog = page.getByRole("dialog", { name: "Filter recent transactions" });
+  const filterDialogBounds = await filterDialog.boundingBox();
+  await expect(filterDialog).toBeVisible();
+  expect(filterDialogBounds?.x).toBeGreaterThanOrEqual(0);
+  expect((filterDialogBounds?.x ?? 0) + (filterDialogBounds?.width ?? 0)).toBeLessThanOrEqual(320);
+  await filterDialog.getByRole("combobox", { name: "Plan" }).selectOption("growth");
+  await page.keyboard.press("Escape");
+  await expect(filterDialog).toBeHidden();
+  const activeFilterAction = page.getByRole("button", { name: "Filters (1)" });
+  await expect(activeFilterAction).toBeFocused();
+  await expect(activeFilterAction).toBeVisible();
+
+  const downloadPromise = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Export" }).click();
+  const download = await downloadPromise;
+  expect(download.suggestedFilename()).toBe("subtera-overview-transactions-2026-07-14.csv");
+  await expect(page.locator(".overview-report-actions [role='status']")).toHaveText(
+    "Downloaded subtera-overview-transactions-2026-07-14.csv with 1 transaction.",
+  );
+
+  await expect(page.locator(".overview-transactions-mobile")).toBeVisible();
+  await expect(page.getByRole("table", { name: "Recent subscription transactions" })).toBeHidden();
+  expect(consoleProblems).toEqual([]);
 });
 
 test("passes an automated WCAG accessibility smoke test", async ({ page }) => {
@@ -104,13 +257,13 @@ test("renders the approved mobile app bar and notification feedback", async ({ p
   }
 
   await notificationButton.click();
-  await expect(page.getByRole("status")).toHaveText("You’re all caught up.");
+  await expect(page.locator(".mobile-notification-status")).toHaveText("You’re all caught up.");
   const dismissStatusButton = page.getByRole("button", { name: "Dismiss notification status" });
   const dismissStatusBounds = await dismissStatusButton.boundingBox();
   expect(dismissStatusBounds?.width).toBeGreaterThanOrEqual(44);
   expect(dismissStatusBounds?.height).toBeGreaterThanOrEqual(44);
   await page.keyboard.press("Escape");
-  await expect(page.getByRole("status")).toBeHidden();
+  await expect(page.locator(".mobile-notification-status")).toBeHidden();
 
   const hasHorizontalOverflow = await page.evaluate(
     () => document.documentElement.scrollWidth > document.documentElement.clientWidth,
@@ -123,8 +276,12 @@ test("opens a modal drawer and contains keyboard focus", async ({ page }) => {
   await page.goto("/");
 
   const { drawer, menuButton } = await openMobileDrawer(page);
+  const mobileSearch = drawer.getByRole("searchbox", { name: "Search workspace" });
 
   await expect(menuButton).toHaveAttribute("aria-expanded", "true");
+  await expect(mobileSearch).toHaveAttribute("placeholder", "Search workspace");
+  await expect(mobileSearch).toHaveValue("");
+  expect(await drawer.innerText()).not.toContain("null");
   await expect(drawer.getByRole("button", { name: "Close navigation menu" })).toBeFocused();
   await expect
     .poll(() => page.evaluate(() => window.getComputedStyle(document.body).overflow))

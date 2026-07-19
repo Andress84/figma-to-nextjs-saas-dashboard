@@ -25,6 +25,21 @@ describe("Input", () => {
     expect(input).toHaveAttribute("aria-invalid", "true");
     expect(ref.current).toBe(input);
   });
+
+  it("treats null and undefined values as empty native input state", () => {
+    const { rerender } = render(
+      <Input aria-label="Nullable search" placeholder={null} value={null} />,
+    );
+    const input = screen.getByRole("textbox", { name: "Nullable search" });
+
+    expect(input).toHaveValue("");
+    expect(input).not.toHaveAttribute("placeholder");
+    expect(input).not.toHaveDisplayValue("null");
+
+    rerender(<Input aria-label="Nullable search" placeholder={undefined} value={undefined} />);
+    expect(input).toHaveValue("");
+    expect(input).not.toHaveAttribute("placeholder");
+  });
 });
 
 describe("Select", () => {

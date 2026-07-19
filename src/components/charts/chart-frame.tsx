@@ -8,6 +8,7 @@ export interface ChartFrameProps {
   readonly className?: string;
   readonly description?: string;
   readonly emptyMessage?: string;
+  readonly footer?: ReactNode;
   readonly height?: "compact" | "standard" | "large";
   readonly isEmpty?: boolean;
   readonly legend?: ReactNode;
@@ -15,6 +16,7 @@ export interface ChartFrameProps {
   readonly loadingLabel?: string;
   readonly metric?: ReactNode;
   readonly summary: ReactNode;
+  readonly summaryVisible?: boolean;
   readonly title: string;
 }
 
@@ -24,6 +26,7 @@ export function ChartFrame({
   className,
   description,
   emptyMessage = "No chart data available.",
+  footer,
   height = "standard",
   isEmpty = false,
   legend,
@@ -31,6 +34,7 @@ export function ChartFrame({
   loadingLabel = "Loading chart data…",
   metric,
   summary,
+  summaryVisible = false,
   title,
 }: ChartFrameProps) {
   const generatedId = useId();
@@ -73,7 +77,10 @@ export function ChartFrame({
       )}
 
       {legend ? <div className="chart-frame-legend">{legend}</div> : null}
-      <div id={summaryId}>{summary}</div>
+      {footer ? <div className="chart-frame-footer">{footer}</div> : null}
+      <div className={cn("chart-frame-summary", !summaryVisible && "sr-only")} id={summaryId}>
+        {summary}
+      </div>
     </Card>
   );
 }

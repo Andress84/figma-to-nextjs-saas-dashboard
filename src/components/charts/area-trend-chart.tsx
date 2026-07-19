@@ -93,6 +93,7 @@ export function AreaTrendChart<TData extends object>({
           visible={summaryVisible}
         />
       }
+      summaryVisible={summaryVisible}
     >
       <div className="chart-canvas" data-animation-active={String(animationActive)}>
         <ResponsiveContainer width="100%" height="100%" minWidth={0}>
