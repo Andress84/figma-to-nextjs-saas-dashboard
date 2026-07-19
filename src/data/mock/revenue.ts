@@ -1,0 +1,87 @@
+import type { CustomerGrowthDataPoint, RevenueDataPoint } from "@/types/dashboard";
+
+export const REVENUE_SERIES = [
+  {
+    id: "revenue-2026-06-15",
+    label: "Jun 15–21",
+    startDate: "2026-06-15",
+    endDate: "2026-06-21",
+    currentRevenue: 24_860,
+    previousRevenue: 22_940,
+  },
+  {
+    id: "revenue-2026-06-22",
+    label: "Jun 22–28",
+    startDate: "2026-06-22",
+    endDate: "2026-06-28",
+    currentRevenue: 26_430,
+    previousRevenue: 24_310,
+  },
+  {
+    id: "revenue-2026-06-29",
+    label: "Jun 29–Jul 5",
+    startDate: "2026-06-29",
+    endDate: "2026-07-05",
+    currentRevenue: 28_190,
+    previousRevenue: 25_610,
+  },
+  {
+    id: "revenue-2026-07-06",
+    label: "Jul 6–12",
+    startDate: "2026-07-06",
+    endDate: "2026-07-12",
+    currentRevenue: 27_740,
+    previousRevenue: 25_110,
+  },
+  {
+    id: "revenue-2026-07-13",
+    label: "Jul 13–14",
+    startDate: "2026-07-13",
+    endDate: "2026-07-14",
+    currentRevenue: 5_260,
+    previousRevenue: 4_660,
+  },
+] as const satisfies readonly RevenueDataPoint[];
+
+export const CUSTOMER_GROWTH_SERIES = [
+  {
+    id: "growth-2026-06-15",
+    label: "Jun 15–21",
+    startDate: "2026-06-15",
+    endDate: "2026-06-21",
+    newCustomerAccounts: 62,
+    newPaidSubscriptions: 53,
+    churnedSubscriptions: 24,
+    netSubscriptions: 53 - 24,
+  },
+  {
+    id: "growth-2026-06-22",
+    label: "Jun 22–28",
+    startDate: "2026-06-22",
+    endDate: "2026-06-28",
+    newCustomerAccounts: 68,
+    newPaidSubscriptions: 58,
+    churnedSubscriptions: 28,
+    netSubscriptions: 58 - 28,
+  },
+  {
+    id: "growth-2026-06-29",
+    label: "Jun 29–Jul 5",
+    startDate: "2026-06-29",
+    endDate: "2026-07-05",
+    newCustomerAccounts: 74,
+    newPaidSubscriptions: 61,
+    churnedSubscriptions: 25,
+    netSubscriptions: 61 - 25,
+  },
+  {
+    id: "growth-2026-07-06",
+    label: "Jul 6–14",
+    startDate: "2026-07-06",
+    endDate: "2026-07-14",
+    newCustomerAccounts: 84,
+    newPaidSubscriptions: 73,
+    churnedSubscriptions: 27,
+    netSubscriptions: 73 - 27,
+  },
+] as const satisfies readonly CustomerGrowthDataPoint[];
