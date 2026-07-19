@@ -1,6 +1,7 @@
 import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
+import { CHURN_TREND_SERIES } from "@/data/mock/analytics";
 import { appShellConfig } from "@/data/mock/app-shell";
 import { CUSTOMERS } from "@/data/mock/customers";
 import { PRODUCT_IDENTITY } from "@/data/mock/identity";
@@ -16,6 +17,7 @@ import {
   GROSS_REVENUE,
   RECURRING_REVENUE,
   REPORTING_PERIOD,
+  RETENTION_METRICS,
   SUBSCRIPTION_FLOW,
 } from "@/data/mock/reporting";
 import { CUSTOMER_GROWTH_SERIES, REVENUE_SERIES } from "@/data/mock/revenue";
@@ -89,6 +91,14 @@ describe("dashboard data consistency", () => {
     expect(total(CUSTOMER_GROWTH_SERIES.map((point) => point.newCustomerAccounts))).toBe(
       CUSTOMER_ACCOUNT_TOTALS.newAccounts,
     );
+  });
+
+  it("keeps the Analytics churn comparison anchored to approved period totals", () => {
+    const finalPoint = CHURN_TREND_SERIES.at(-1);
+
+    expect(finalPoint?.currentChurnRate).toBe(RETENTION_METRICS.currentChurnRate);
+    expect(finalPoint?.previousChurnRate).toBe(RETENTION_METRICS.previousChurnRate);
+    expectUniqueIds(CHURN_TREND_SERIES);
   });
 
   it("separates current subscription states from historical and table records", () => {

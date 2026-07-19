@@ -133,6 +133,13 @@ export interface CustomerGrowthDataPoint {
   readonly startDate: IsoDateString;
 }
 
+export interface ChurnTrendDataPoint {
+  readonly currentChurnRate: number;
+  readonly id: string;
+  readonly label: string;
+  readonly previousChurnRate: number;
+}
+
 export type CurrentSubscriptionStatus = Exclude<SubscriptionStatus, "canceled">;
 
 export interface SubscriptionStatusCount {

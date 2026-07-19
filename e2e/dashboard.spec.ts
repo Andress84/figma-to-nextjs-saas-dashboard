@@ -225,6 +225,138 @@ test("keeps the approved Overview actions available on mobile", async ({ page })
   expect(consoleProblems).toEqual([]);
 });
 
+test("renders and operates the approved Analytics dashboard", async ({ page }) => {
+  const consoleErrors: string[] = [];
+  page.on("console", (message) => {
+    if (message.type() === "error") {
+      consoleErrors.push(message.text());
+    }
+  });
+
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/analytics");
+
+  await expect(page).toHaveTitle("Analytics — Subtera");
+  await expect(page.getByRole("heading", { level: 1, name: "Analytics" })).toBeVisible();
+  await expect(
+    page.getByRole("navigation", { name: "Breadcrumb" }).getByText("Analytics"),
+  ).toHaveAttribute("aria-current", "page");
+  await expect(page.getByRole("region", { name: "Analytics metrics" })).toBeVisible();
+  await expect(page.getByRole("figure", { name: "Revenue and MRR Trends" })).toBeVisible();
+  await expect(page.getByRole("figure", { name: "Subscription Growth" })).toBeVisible();
+  await expect(page.getByRole("figure", { name: "Churn and Retention" })).toBeVisible();
+  await expect(
+    page.getByRole("table", { name: /Plan performance by subscriber mix/ }),
+  ).toBeVisible();
+  await expect(page.locator('[data-chart-summary="true"]')).toHaveCount(3);
+
+  const revenueFigure = page.getByRole("figure", { name: "Revenue and MRR Trends" });
+  await revenueFigure.getByRole("radio", { name: "MRR" }).click();
+  await expect(revenueFigure.getByRole("radio", { name: "MRR" })).toBeChecked();
+  await expect(revenueFigure.locator(".chart-legend-label").getByText("Current MRR")).toBeVisible();
+
+  const compare = page.getByRole("button", { name: "Compare to previous period" });
+  await expect(compare).toHaveAttribute("aria-pressed", "true");
+  await compare.click();
+  await expect(compare).toHaveAttribute("aria-pressed", "false");
+  await expect(revenueFigure.locator(".chart-legend-label").getByText("Previous MRR")).toHaveCount(
+    0,
+  );
+
+  const filterTrigger = page.getByRole("button", { name: "Filters" });
+  await filterTrigger.click();
+  const filterDialog = page.getByRole("dialog", { name: "Filter Analytics report" });
+  await filterDialog.getByRole("combobox", { name: "Plan" }).selectOption("growth");
+  await expect(filterDialog.getByText("1 of 4 plans shown")).toBeVisible();
+  const planTable = page.getByRole("table", { name: /Plan performance by subscriber mix/ });
+  await expect(planTable.getByRole("rowheader", { name: "Growth" })).toBeVisible();
+  await expect(planTable.getByRole("rowheader", { name: "Starter" })).toHaveCount(0);
+  await page.keyboard.press("Escape");
+  const activeFilterTrigger = page.getByRole("button", { name: "Filters (1)" });
+  await expect(activeFilterTrigger).toBeFocused();
+
+  const downloadPromise = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Export report" }).click();
+  const download = await downloadPromise;
+  expect(download.suggestedFilename()).toBe("subtera-analytics-report-2026-07-14.csv");
+  await expect(page.locator(".analytics-report-actions [role='status']")).toHaveText(
+    "Downloaded subtera-analytics-report-2026-07-14.csv with 1 visible plan.",
+  );
+  expect(consoleErrors).toEqual([]);
+});
+
+test("keeps Analytics responsive and its controls reachable at required widths", async ({
+  page,
+}) => {
+  const consoleProblems: string[] = [];
+  page.on("console", (message) => {
+    if (message.type() === "error" || message.type() === "warning") {
+      consoleProblems.push(message.text());
+    }
+  });
+  const viewports = [
+    { width: 1440, height: 900 },
+    { width: 1200, height: 900 },
+    { width: 1024, height: 800 },
+    { width: 768, height: 800 },
+    { width: 390, height: 844 },
+    { width: 320, height: 700 },
+  ] as const;
+
+  await page.goto("/analytics");
+
+  for (const viewport of viewports) {
+    await page.setViewportSize(viewport);
+    await expect(page.getByRole("heading", { level: 1, name: "Analytics" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Export report" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Filters" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Compare to previous period" })).toBeVisible();
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth > document.documentElement.clientWidth,
+      ),
+    ).toBe(false);
+  }
+
+  const dateControl = page.getByRole("button", {
+    name: /Reporting period: Jun 15 – Jul 14, 2026/,
+  });
+  const compareControl = page.getByRole("button", { name: "Compare to previous period" });
+  const filterControl = page.getByRole("button", { name: "Filters" });
+  const exportControl = page.getByRole("button", { name: "Export report" });
+
+  for (const control of [dateControl, compareControl, filterControl, exportControl]) {
+    const bounds = await control.boundingBox();
+    expect(bounds?.height).toBeGreaterThanOrEqual(44);
+  }
+
+  await filterControl.click();
+  const filterDialog = page.getByRole("dialog", { name: "Filter Analytics report" });
+  const filterBounds = await filterDialog.boundingBox();
+  await expect(filterDialog).toBeVisible();
+  expect(filterBounds?.x).toBeGreaterThanOrEqual(0);
+  expect((filterBounds?.x ?? 0) + (filterBounds?.width ?? 0)).toBeLessThanOrEqual(320);
+  await filterDialog.getByRole("combobox", { name: "Churn performance" }).selectOption("low-churn");
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("button", { name: "Filters (1)" })).toBeFocused();
+  expect(consoleProblems).toEqual([]);
+});
+
+test("passes Analytics WCAG smoke tests on desktop and mobile", async ({ page }) => {
+  for (const viewport of [
+    { width: 1440, height: 900 },
+    { width: 390, height: 844 },
+  ]) {
+    await page.setViewportSize(viewport);
+    await page.goto("/analytics");
+
+    const results = await new AxeBuilder({ page })
+      .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
+      .analyze();
+    expect(results.violations).toEqual([]);
+  }
+});
+
 test("passes an automated WCAG accessibility smoke test", async ({ page }) => {
   await page.goto("/");
 

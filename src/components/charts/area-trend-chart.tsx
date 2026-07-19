@@ -15,7 +15,7 @@ import { ChartFrame } from "./chart-frame";
 import { ChartLegend } from "./chart-legend";
 import { ChartSummary } from "./chart-summary";
 import { ChartTooltip } from "./chart-tooltip";
-import type { ChartTooltipTrend, ComparisonChartSeries } from "./chart-types";
+import type { ChartTooltipTrend, NonEmptyChartSeries } from "./chart-types";
 import {
   formatChartAxisValue,
   formatChartValue,
@@ -34,7 +34,7 @@ export interface AreaTrendChartProps<TData extends object> {
   readonly labelHeading?: string;
   readonly labelKey: Extract<keyof TData, string>;
   readonly metric?: ReactNode;
-  readonly series: ComparisonChartSeries<TData>;
+  readonly series: NonEmptyChartSeries<TData>;
   readonly summaryVisible?: boolean;
   readonly title: string;
   readonly tooltipTrend?: ChartTooltipTrend<TData>;

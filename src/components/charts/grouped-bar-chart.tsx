@@ -29,6 +29,7 @@ export interface GroupedBarChartProps<TData extends object> {
   readonly className?: string;
   readonly data: readonly TData[];
   readonly description?: string;
+  readonly footer?: ReactNode;
   readonly height?: "compact" | "standard" | "large";
   readonly labelHeading?: string;
   readonly labelKey: Extract<keyof TData, string>;
@@ -44,6 +45,7 @@ export function GroupedBarChart<TData extends object>({
   className,
   data,
   description,
+  footer,
   height = "standard",
   labelHeading,
   labelKey,
@@ -64,6 +66,7 @@ export function GroupedBarChart<TData extends object>({
       actions={actions}
       className={className}
       description={description}
+      footer={footer}
       height={height}
       isEmpty={isEmpty}
       metric={metric}
