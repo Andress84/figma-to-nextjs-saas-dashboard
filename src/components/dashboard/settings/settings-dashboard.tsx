@@ -1,6 +1,6 @@
 "use client";
 
-import type { FormEvent } from "react";
+import { type FormEvent, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
@@ -17,6 +17,7 @@ import { SETTINGS_TABS } from "./settings-utils";
 import { WorkspaceProfile } from "./workspace-profile";
 
 function SettingsDashboardContent() {
+  const formRef = useRef<HTMLFormElement>(null);
   const {
     activeTab,
     announcement,
@@ -28,6 +29,10 @@ function SettingsDashboardContent() {
   } = useSettings();
   const activeTabLabel = SETTINGS_TABS.find((tab) => tab.value === activeTab)?.label ?? "Settings";
 
+  useEffect(() => {
+    formRef.current?.setAttribute("data-settings-ready", "true");
+  }, []);
+
   function submitSettings(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     saveChanges();
@@ -35,6 +40,7 @@ function SettingsDashboardContent() {
 
   return (
     <form
+      ref={formRef}
       className="page-stack settings-page"
       noValidate
       aria-label="Workspace settings"

@@ -1,5 +1,5 @@
 import AxeBuilder from "@axe-core/playwright";
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Locator, type Page } from "@playwright/test";
 
 const routes = [
   { heading: "Overview", label: "Overview", path: "/" },
@@ -7,6 +7,12 @@ const routes = [
   { heading: "Customers", label: "Customers", path: "/customers" },
   { heading: "Subscriptions", label: "Subscriptions", path: "/subscriptions" },
   { heading: "Settings", label: "Settings", path: "/settings" },
+] as const;
+
+const reportingPeriodRoutes = [
+  { heading: "Overview", path: "/" },
+  { heading: "Analytics", path: "/analytics" },
+  { heading: "Subscriptions", path: "/subscriptions" },
 ] as const;
 
 async function openMobileDrawer(page: Page) {
@@ -29,6 +35,39 @@ async function expectFocusInsideDrawer(page: Page) {
       }),
     )
     .toBe(true);
+}
+
+async function openReportingPeriod(page: Page) {
+  const trigger = page.getByRole("button", {
+    name: "Reporting period: Jun 15 – Jul 14, 2026",
+  });
+  await expect(trigger).toHaveAttribute("data-reporting-period-ready", "true");
+  await expect(trigger).toHaveAttribute("aria-haspopup", "dialog");
+  await expect(trigger).toHaveAttribute("aria-expanded", "false");
+  await trigger.click();
+
+  const dialog = page.getByRole("dialog", { name: "Reporting period" });
+  await expect(dialog).toBeVisible();
+  await expect(trigger).toHaveAttribute("aria-expanded", "true");
+
+  return { dialog, trigger };
+}
+
+async function expectReportingPeriodInsideViewport(
+  page: Page,
+  dialog: Locator,
+  viewport: { readonly height: number; readonly width: number },
+) {
+  const bounds = await dialog.boundingBox();
+  expect(bounds?.x).toBeGreaterThanOrEqual(0);
+  expect(bounds?.y).toBeGreaterThanOrEqual(0);
+  expect((bounds?.x ?? 0) + (bounds?.width ?? 0)).toBeLessThanOrEqual(viewport.width);
+  expect((bounds?.y ?? 0) + (bounds?.height ?? 0)).toBeLessThanOrEqual(viewport.height);
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth > document.documentElement.clientWidth,
+    ),
+  ).toBe(false);
 }
 
 test("navigates between every dashboard route", async ({ page }) => {
@@ -150,6 +189,124 @@ test("contains the Overview layout at every required integration viewport", asyn
     expect(hasHorizontalOverflow).toBe(false);
   }
 
+  expect(consoleProblems).toEqual([]);
+});
+
+test("opens the shared reporting-period calendar on every report route", async ({ page }) => {
+  const consoleProblems: string[] = [];
+  page.on("console", (message) => {
+    if (message.type() === "error" || message.type() === "warning") {
+      consoleProblems.push(message.text());
+    }
+  });
+  await page.setViewportSize({ width: 1440, height: 900 });
+
+  for (const route of reportingPeriodRoutes) {
+    await page.goto(route.path, { waitUntil: "domcontentloaded" });
+    await expect(page.getByRole("heading", { level: 1, name: route.heading })).toBeVisible();
+    const { dialog, trigger } = await openReportingPeriod(page);
+
+    await expect(dialog.getByText("Current approved range: Jun 15 – Jul 14, 2026")).toBeVisible();
+    await expect(dialog.getByText("Static demo snapshot")).toBeVisible();
+    await expect(dialog.getByRole("heading", { level: 3, name: "June 2026" })).toBeVisible();
+    await expect(dialog.getByRole("heading", { level: 3, name: "July 2026" })).toBeVisible();
+    await expect(dialog.locator('time[datetime="2026-06-15"]')).toHaveAttribute(
+      "data-range-start",
+      "true",
+    );
+    await expect(dialog.locator('time[datetime="2026-07-14"]')).toHaveAttribute(
+      "data-range-end",
+      "true",
+    );
+
+    await page.keyboard.press("Escape");
+    await expect(dialog).toBeHidden();
+    await expect(trigger).toBeFocused();
+  }
+
+  expect(consoleProblems).toEqual([]);
+});
+
+test("contains both calendar months at every required desktop viewport", async ({ page }) => {
+  const consoleProblems: string[] = [];
+  page.on("console", (message) => {
+    if (message.type() === "error" || message.type() === "warning") {
+      consoleProblems.push(message.text());
+    }
+  });
+
+  for (const viewport of [
+    { width: 1440, height: 900 },
+    { width: 1200, height: 900 },
+    { width: 1024, height: 800 },
+  ] as const) {
+    await page.setViewportSize(viewport);
+    await page.goto("/", { waitUntil: "domcontentloaded" });
+    const { dialog, trigger } = await openReportingPeriod(page);
+
+    await expectReportingPeriodInsideViewport(page, dialog, viewport);
+    await expect(dialog.getByRole("heading", { level: 3, name: "June 2026" })).toBeVisible();
+    await expect(dialog.getByRole("heading", { level: 3, name: "July 2026" })).toBeVisible();
+    await dialog.getByRole("button", { name: "Done" }).click();
+    await expect(trigger).toBeFocused();
+  }
+
+  expect(consoleProblems).toEqual([]);
+});
+
+test("contains and operates the single-month calendar at every required mobile viewport", async ({
+  page,
+}) => {
+  const consoleProblems: string[] = [];
+  page.on("console", (message) => {
+    if (message.type() === "error" || message.type() === "warning") {
+      consoleProblems.push(message.text());
+    }
+  });
+
+  for (const viewport of [
+    { width: 768, height: 800 },
+    { width: 390, height: 844 },
+    { width: 320, height: 700 },
+  ] as const) {
+    await page.setViewportSize(viewport);
+    await page.goto("/", { waitUntil: "domcontentloaded" });
+    const { dialog, trigger } = await openReportingPeriod(page);
+    const juneHeading = dialog.getByRole("heading", { level: 3, name: "June 2026" });
+    const julyHeading = dialog.getByRole("heading", { level: 3, name: "July 2026" });
+    const previousMonth = dialog.getByRole("button", { name: "Show previous month" });
+    const nextMonth = dialog.getByRole("button", { name: "Show next month" });
+
+    await expectReportingPeriodInsideViewport(page, dialog, viewport);
+    await expect(juneHeading).toBeVisible();
+    await expect(julyHeading).toBeHidden();
+    await expect(previousMonth).toBeDisabled();
+    for (const control of [previousMonth, nextMonth]) {
+      const controlBounds = await control.boundingBox();
+      expect(controlBounds?.width).toBeGreaterThanOrEqual(44);
+      expect(controlBounds?.height).toBeGreaterThanOrEqual(44);
+    }
+
+    await nextMonth.click();
+    await expect(juneHeading).toBeHidden();
+    await expect(julyHeading).toBeVisible();
+    await expect(dialog.locator('time[datetime="2026-07-14"]')).toHaveAttribute(
+      "data-range-end",
+      "true",
+    );
+
+    const done = dialog.getByRole("button", { name: "Done" });
+    await done.scrollIntoViewIfNeeded();
+    await done.click();
+    await expect(trigger).toBeFocused();
+  }
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/", { waitUntil: "domcontentloaded" });
+  const { dialog, trigger } = await openReportingPeriod(page);
+  await page.getByRole("heading", { level: 1, name: "Overview" }).click();
+  await expect(dialog).toBeHidden();
+  await expect(trigger).toBeFocused();
   expect(consoleProblems).toEqual([]);
 });
 
@@ -348,7 +505,7 @@ test("passes Analytics WCAG smoke tests on desktop and mobile", async ({ page })
     { width: 390, height: 844 },
   ]) {
     await page.setViewportSize(viewport);
-    await page.goto("/analytics");
+    await page.goto("/analytics", { waitUntil: "domcontentloaded" });
 
     const results = await new AxeBuilder({ page })
       .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
@@ -552,7 +709,7 @@ test("passes Customers WCAG smoke tests on desktop and mobile", async ({ page })
     { width: 390, height: 844 },
   ]) {
     await page.setViewportSize(viewport);
-    await page.goto("/customers");
+    await page.goto("/customers", { waitUntil: "domcontentloaded" });
 
     const results = await new AxeBuilder({ page })
       .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
@@ -802,6 +959,10 @@ test("renders and operates the approved Settings dashboard", async ({ page }) =>
 
   const save = page.getByRole("button", { name: "Save changes" });
   const discard = page.getByRole("button", { name: "Discard changes" });
+  await expect(page.getByRole("form", { name: "Workspace settings" })).toHaveAttribute(
+    "data-settings-ready",
+    "true",
+  );
   await expect(save).toBeDisabled();
   await expect(discard).toBeDisabled();
   await expect(page.getByLabel("Workspace name")).toHaveValue("Acme Cloud");
@@ -809,9 +970,20 @@ test("renders and operates the approved Settings dashboard", async ({ page }) =>
   await expect(page.getByLabel("Default reporting period")).toHaveValue("Last 30 days");
   await expect(page.getByText("Jul 14, 2026 at 10:42")).toBeVisible();
 
-  await page.getByLabel("Workspace name").fill("Acme Studio");
-  await page.getByLabel("Time zone").selectOption("UTC");
-  await page.getByRole("switch", { name: "Compare with previous period" }).click();
+  const workspaceName = page.getByLabel("Workspace name");
+  const workspaceSlug = page.getByLabel("Workspace ID or slug");
+  const timeZone = page.getByLabel("Time zone");
+  const compareWithPreviousPeriod = page.getByRole("switch", {
+    name: "Compare with previous period",
+  });
+
+  await workspaceName.fill("Acme Studio");
+  await expect(workspaceName).toHaveValue("Acme Studio");
+  await expect(save).toBeEnabled();
+  await timeZone.selectOption("UTC");
+  await expect(timeZone).toHaveValue("UTC");
+  await compareWithPreviousPeriod.click();
+  await expect(compareWithPreviousPeriod).not.toBeChecked();
   await expect(save).toBeEnabled();
   await expect(discard).toBeEnabled();
   await save.click();
@@ -819,17 +991,24 @@ test("renders and operates the approved Settings dashboard", async ({ page }) =>
     "Settings saved for this in-memory demo session.",
   );
   await expect(save).toBeDisabled();
+  await expect(discard).toBeDisabled();
+  await expect(workspaceName).toHaveValue("Acme Studio");
 
-  await page.getByLabel("Workspace ID or slug").fill("Not URL Safe");
+  await workspaceSlug.fill("Not URL Safe");
+  await expect(workspaceSlug).toHaveValue("Not URL Safe");
+  await expect(save).toBeEnabled();
+  await expect(discard).toBeEnabled();
   await save.click();
   await expect(page.getByText(/Use lowercase letters, numbers and single hyphens/)).toBeVisible();
-  await expect(page.getByLabel("Workspace ID or slug")).toBeFocused();
+  await expect(workspaceSlug).toBeFocused();
   await expect(page.locator(".settings-announcement")).toHaveText(
     "Settings were not saved. Correct the highlighted fields and try again.",
   );
   await discard.click();
-  await expect(page.getByLabel("Workspace ID or slug")).toHaveValue("acme-cloud");
-  await expect(page.getByLabel("Workspace name")).toHaveValue("Acme Studio");
+  await expect(workspaceSlug).toHaveValue("acme-cloud");
+  await expect(workspaceName).toHaveValue("Acme Studio");
+  await expect(save).toBeDisabled();
+  await expect(discard).toBeDisabled();
   expect(consoleProblems).toEqual([]);
 });
 

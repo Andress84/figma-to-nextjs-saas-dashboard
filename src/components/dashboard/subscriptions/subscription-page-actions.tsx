@@ -1,7 +1,8 @@
 "use client";
 
-import { CalendarDays, ChevronDown, Download, ListFilter, Plus } from "lucide-react";
+import { Download, ListFilter, Plus } from "lucide-react";
 import { type PointerEvent as ReactPointerEvent, useEffect, useId, useRef, useState } from "react";
+import { ReportingPeriodPopover } from "@/components/dashboard/reporting-period/reporting-period-popover";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
 import { PLAN_DEFINITIONS } from "@/data/mock/plans";
@@ -11,13 +12,7 @@ import { buildSubscriptionCsv, SUBSCRIPTION_EXPORT_FILE_NAME } from "./subscript
 import { SUBSCRIPTION_STATUS_OPTIONS } from "./subscription-utils";
 import { useSubscriptions } from "./subscriptions-context";
 
-interface SubscriptionPageActionsProps {
-  readonly reportingPeriod: string;
-}
-
-export function SubscriptionPageActions({
-  reportingPeriod,
-}: Readonly<SubscriptionPageActionsProps>) {
+export function SubscriptionPageActions() {
   const {
     planFilter,
     setAnnouncement,
@@ -94,18 +89,7 @@ export function SubscriptionPageActions({
 
   return (
     <div className="subscription-page-actions">
-      <button
-        className="subscription-date-control"
-        type="button"
-        aria-label={`Reporting period: ${reportingPeriod}`}
-        onClick={() =>
-          setAnnouncement(`The reporting period is fixed to ${reportingPeriod} for this demo.`)
-        }
-      >
-        <CalendarDays size={17} strokeWidth={1.8} aria-hidden="true" />
-        <span>{reportingPeriod}</span>
-        <ChevronDown size={16} strokeWidth={1.8} aria-hidden="true" />
-      </button>
+      <ReportingPeriodPopover />
 
       <div className="subscription-secondary-actions">
         <div className="subscription-filter-control">

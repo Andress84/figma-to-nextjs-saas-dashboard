@@ -110,6 +110,40 @@ describe("SettingsDashboard", () => {
     expect(companyName).toHaveValue("Acme Cloud Labs");
   });
 
+  it("preserves the latest saved baseline through rapid invalid edit and discard", async () => {
+    const user = userEvent.setup();
+    renderSettings();
+    const workspaceName = screen.getByLabelText("Workspace name");
+    const workspaceSlug = screen.getByLabelText("Workspace ID or slug");
+    const save = screen.getByRole("button", { name: "Save changes" });
+    const discard = screen.getByRole("button", { name: "Discard changes" });
+
+    await user.clear(workspaceName);
+    await user.type(workspaceName, "Acme Studio");
+    expect(save).toBeEnabled();
+    await user.click(save);
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "Settings saved for this in-memory demo session.",
+    );
+    expect(save).toBeDisabled();
+    expect(discard).toBeDisabled();
+    expect(workspaceName).toHaveValue("Acme Studio");
+
+    await user.clear(workspaceSlug);
+    await user.type(workspaceSlug, "Not URL Safe");
+    expect(workspaceSlug).toHaveValue("Not URL Safe");
+    expect(save).toBeEnabled();
+    expect(discard).toBeEnabled();
+    await user.click(save);
+    expect(screen.getByText(/Use lowercase letters, numbers and single hyphens/)).toBeVisible();
+    await user.click(discard);
+
+    expect(workspaceSlug).toHaveValue("acme-cloud");
+    expect(workspaceName).toHaveValue("Acme Studio");
+    expect(save).toBeDisabled();
+    expect(discard).toBeDisabled();
+  });
+
   it("validates required identity fields accessibly before saving", async () => {
     const user = userEvent.setup();
     renderSettings();

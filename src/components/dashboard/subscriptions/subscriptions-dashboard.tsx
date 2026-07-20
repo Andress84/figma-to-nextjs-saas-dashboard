@@ -1,6 +1,5 @@
 import { PageHeader } from "@/components/ui/page-header";
 import { PAGE_COPY } from "@/data/mock/pages";
-import { REPORTING_PERIOD } from "@/data/mock/reporting";
 import { SubscriptionAnnouncement } from "./subscription-announcement";
 import { SubscriptionDirectory } from "./subscription-directory";
 import { SubscriptionMetrics } from "./subscription-metrics";
@@ -17,7 +16,7 @@ export function SubscriptionsDashboard() {
           className="subscriptions-page-header"
           title={PAGE_COPY.subscriptions.title}
           description={PAGE_COPY.subscriptions.description}
-          actions={<SubscriptionPageActions reportingPeriod={REPORTING_PERIOD.displayLabel} />}
+          actions={<SubscriptionPageActions />}
         />
 
         <SubscriptionMetrics />

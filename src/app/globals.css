@@ -102,6 +102,7 @@
   --size-interactive-min: 44px;
   --size-control-default: 40px;
   --size-control-compact: 36px;
+  --size-reporting-popover-max-width: 640px;
   --size-data-table-min-width: 720px;
   --size-chart-height-compact: 180px;
   --size-chart-height-standard: 260px;
@@ -2424,7 +2425,7 @@ textarea {
   gap: var(--space-2);
 }
 
-.overview-date-control,
+.reporting-period-trigger,
 .overview-card-action {
   display: inline-flex;
   min-height: var(--size-control-default);
@@ -2447,19 +2448,236 @@ textarea {
     color var(--motion-fast) var(--ease-standard);
 }
 
-.overview-date-control:hover,
+.reporting-period-trigger:hover,
 .overview-card-action:hover {
   border-color: var(--color-border-strong);
   background: var(--color-surface-hover);
 }
 
-.overview-date-control:active,
+.reporting-period-trigger:active,
 .overview-card-action:active {
   background: var(--color-surface-selected);
 }
 
-.overview-date-control span {
+.reporting-period-trigger > span {
   font-variant-numeric: var(--font-numeric-tabular);
+}
+
+.reporting-period-control {
+  position: relative;
+  min-width: 0;
+  flex: 0 0 auto;
+}
+
+.reporting-period-trigger[aria-expanded="true"] {
+  border-color: var(--color-border-accent);
+  background: var(--color-surface-selected);
+}
+
+.reporting-period-trigger-chevron {
+  transition: transform var(--motion-fast) var(--ease-standard);
+}
+
+.reporting-period-trigger[aria-expanded="true"] .reporting-period-trigger-chevron {
+  transform: rotate(180deg);
+}
+
+.reporting-period-popover {
+  position: fixed;
+  z-index: 80;
+  display: grid;
+  width: min(var(--size-reporting-popover-max-width), calc(100vw - var(--space-8)));
+  gap: var(--space-4);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: var(--space-5);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-card);
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow-card);
+  color: var(--color-text-primary);
+}
+
+.reporting-period-popover-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: var(--space-4);
+}
+
+.reporting-period-popover-header h2 {
+  margin: 0;
+  font-size: var(--font-size-section-heading);
+  font-weight: var(--font-weight-section-heading);
+  line-height: var(--line-height-section-heading);
+}
+
+.reporting-period-popover-header p {
+  margin: var(--space-1) 0 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-caption);
+  font-variant-numeric: var(--font-numeric-tabular);
+  line-height: var(--line-height-caption);
+}
+
+.reporting-period-preset {
+  display: inline-flex;
+  min-height: var(--size-control-compact);
+  align-items: center;
+  gap: var(--space-2);
+  padding-inline: var(--space-3);
+  border: 1px solid var(--color-border-accent);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-selected);
+  color: var(--color-accent-lavender);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-ui-label);
+  white-space: nowrap;
+}
+
+.reporting-period-preset strong {
+  color: var(--color-text-secondary);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.reporting-period-mobile-navigation {
+  display: none;
+}
+
+.reporting-period-calendars {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-5);
+}
+
+.reporting-calendar-month {
+  min-width: 0;
+}
+
+.reporting-calendar-month h3 {
+  margin: 0 0 var(--space-3);
+  font-size: var(--font-size-card-title);
+  font-weight: var(--font-weight-card-title);
+  line-height: var(--line-height-card-title);
+  text-align: center;
+}
+
+.reporting-calendar-weekdays,
+.reporting-calendar-days {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: var(--space-1);
+}
+
+.reporting-calendar-weekdays {
+  margin-bottom: var(--space-1);
+}
+
+.reporting-calendar-weekdays span {
+  color: var(--color-text-muted);
+  font-size: 10px;
+  font-weight: var(--font-weight-ui-label);
+  line-height: var(--line-height-caption);
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.reporting-calendar-days {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.reporting-calendar-days li {
+  min-width: 0;
+}
+
+.reporting-calendar-day,
+.reporting-calendar-empty-day {
+  display: grid;
+  min-height: var(--space-8);
+  place-items: center;
+}
+
+.reporting-calendar-day {
+  border: 1px solid transparent;
+  border-radius: var(--radius-surface);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-caption);
+  font-variant-numeric: var(--font-numeric-tabular);
+  line-height: var(--line-height-caption);
+}
+
+.reporting-calendar-day[data-selected="true"] {
+  border-color: var(--color-border-accent);
+  background: var(--color-surface-selected);
+  color: var(--color-accent-lavender);
+  font-weight: 700;
+}
+
+.reporting-calendar-day[data-range-start="true"],
+.reporting-calendar-day[data-range-end="true"] {
+  border-color: var(--color-accent-primary);
+  background: var(--color-accent-primary);
+  color: var(--color-text-primary);
+}
+
+.reporting-period-selection {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-caption);
+  font-variant-numeric: var(--font-numeric-tabular);
+  font-weight: var(--font-weight-caption);
+  line-height: var(--line-height-caption);
+}
+
+.reporting-period-selection > span {
+  width: var(--space-3);
+  height: var(--space-3);
+  flex: 0 0 auto;
+  border: 1px solid var(--color-border-accent);
+  border-radius: var(--radius-surface);
+  background: var(--color-surface-selected);
+}
+
+.reporting-period-popover-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border-default);
+}
+
+.reporting-period-popover-footer p {
+  display: flex;
+  min-width: 0;
+  align-items: flex-start;
+  gap: var(--space-2);
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-caption);
+  line-height: var(--line-height-caption);
+}
+
+.reporting-period-popover-footer p > svg {
+  flex: 0 0 auto;
+  margin-top: 2px;
+  color: var(--color-information);
+}
+
+.reporting-period-popover-footer p span {
+  display: grid;
+}
+
+.reporting-period-popover-footer p strong {
+  color: var(--color-text-primary);
+  font-weight: var(--font-weight-ui-label);
 }
 
 .overview-filter-control {
@@ -2752,41 +2970,6 @@ textarea {
   min-width: 0;
   align-items: center;
   gap: var(--space-2);
-}
-
-.analytics-date-control {
-  display: inline-flex;
-  min-height: var(--size-control-default);
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-2);
-  padding-inline: var(--space-4);
-  border: 1px solid var(--color-border-default);
-  border-radius: var(--radius-control);
-  background: var(--color-surface-raised);
-  color: var(--color-text-primary);
-  font-size: var(--font-size-ui-label);
-  font-weight: var(--font-weight-ui-label);
-  line-height: var(--line-height-ui-label);
-  white-space: nowrap;
-  cursor: pointer;
-  transition:
-    border-color var(--motion-fast) var(--ease-standard),
-    background-color var(--motion-fast) var(--ease-standard),
-    color var(--motion-fast) var(--ease-standard);
-}
-
-.analytics-date-control:hover {
-  border-color: var(--color-border-strong);
-  background: var(--color-surface-hover);
-}
-
-.analytics-date-control:active {
-  background: var(--color-surface-selected);
-}
-
-.analytics-date-control span {
-  font-variant-numeric: var(--font-numeric-tabular);
 }
 
 .analytics-compare-control[aria-pressed="true"] {
@@ -3530,40 +3713,6 @@ textarea {
 .subscription-secondary-actions,
 .subscription-table-controls {
   gap: var(--space-2);
-}
-
-.subscription-date-control {
-  display: inline-flex;
-  min-height: var(--size-control-default);
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-2);
-  padding-inline: var(--space-4);
-  border: 1px solid var(--color-border-default);
-  border-radius: var(--radius-control);
-  background: var(--color-surface-raised);
-  color: var(--color-text-primary);
-  cursor: pointer;
-  font-size: var(--font-size-ui-label);
-  font-weight: var(--font-weight-ui-label);
-  line-height: var(--line-height-ui-label);
-  transition:
-    border-color var(--motion-fast) var(--ease-standard),
-    background-color var(--motion-fast) var(--ease-standard);
-  white-space: nowrap;
-}
-
-.subscription-date-control:hover {
-  border-color: var(--color-border-strong);
-  background: var(--color-surface-hover);
-}
-
-.subscription-date-control:active {
-  background: var(--color-surface-selected);
-}
-
-.subscription-date-control span {
-  font-variant-numeric: var(--font-numeric-tabular);
 }
 
 .subscription-add-button {
@@ -4730,9 +4879,24 @@ textarea {
     border-radius: var(--radius-control);
   }
 
-  .analytics-date-control,
-  .subscription-date-control {
+  .reporting-period-trigger {
     min-height: var(--size-interactive-min);
+  }
+
+  .reporting-period-mobile-navigation {
+    display: grid;
+    grid-template-columns: repeat(2, var(--size-interactive-min));
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+  }
+
+  .reporting-period-calendars {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .reporting-calendar-month[data-mobile-active="false"] {
+    display: none;
   }
 
   .data-table-frame-header,
@@ -4934,13 +5098,17 @@ textarea {
     flex-direction: column;
   }
 
-  .subscription-date-control {
+  .subscription-page-actions > .reporting-period-control,
+  .subscription-page-actions .reporting-period-trigger {
     width: 100%;
+  }
+
+  .subscription-page-actions .reporting-period-trigger {
     min-height: var(--size-interactive-min);
     justify-content: flex-start;
   }
 
-  .subscription-date-control span {
+  .subscription-page-actions .reporting-period-trigger > span {
     min-width: 0;
     flex: 1 1 auto;
     text-align: left;
@@ -5011,15 +5179,20 @@ textarea {
     align-items: stretch;
   }
 
-  .analytics-date-control,
+  .analytics-report-actions > .reporting-period-control,
   .analytics-compare-control {
     grid-column: 1 / -1;
+    width: 100%;
+  }
+
+  .analytics-report-actions .reporting-period-trigger,
+  .analytics-compare-control {
     width: 100%;
     min-height: var(--size-interactive-min);
     justify-content: flex-start;
   }
 
-  .analytics-date-control span,
+  .analytics-report-actions .reporting-period-trigger > span,
   .analytics-compare-control .ui-button-content span:last-child {
     min-width: 0;
     flex: 1 1 auto;
@@ -5065,16 +5238,44 @@ textarea {
     left: 0;
   }
 
-  .overview-date-control {
+  .overview-report-actions > .reporting-period-control,
+  .overview-report-actions .reporting-period-trigger {
     width: 100%;
+  }
+
+  .overview-report-actions .reporting-period-trigger {
     min-height: var(--size-interactive-min);
     justify-content: flex-start;
   }
 
-  .overview-date-control span {
+  .overview-report-actions .reporting-period-trigger > span {
     min-width: 0;
     flex: 1 1 auto;
     text-align: left;
+  }
+
+  .reporting-period-popover {
+    gap: var(--space-3);
+    padding: var(--space-4);
+  }
+
+  .reporting-period-popover-header {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-3);
+  }
+
+  .reporting-period-preset {
+    width: fit-content;
+    min-height: var(--size-interactive-min);
+  }
+
+  .reporting-period-popover-footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .reporting-period-popover-footer .ui-button {
+    width: 100%;
   }
 
   .overview-metric-grid {
@@ -5586,7 +5787,8 @@ textarea {
   .ui-toggle,
   .ui-toggle-track,
   .ui-toggle-thumb,
-  .subscription-date-control {
+  .reporting-period-trigger,
+  .reporting-period-trigger-chevron {
     transition: none;
   }
 
@@ -5632,6 +5834,14 @@ textarea {
     border-color: CanvasText;
   }
 
+  .reporting-period-trigger,
+  .reporting-period-popover,
+  .reporting-period-preset,
+  .reporting-calendar-day,
+  .reporting-period-selection > span {
+    border-color: CanvasText;
+  }
+
   .ui-icon-button[data-active="true"],
   .ui-tab[data-selected="true"],
   .ui-segmented-option[data-selected="true"],
@@ -5649,5 +5859,11 @@ textarea {
   .analytics-revenue-summary > div[data-selected="true"] {
     outline: 2px solid Highlight;
     outline-offset: 1px;
+  }
+
+  .reporting-calendar-day[data-selected="true"],
+  .reporting-period-preset {
+    outline: 2px solid Highlight;
+    outline-offset: -2px;
   }
 }

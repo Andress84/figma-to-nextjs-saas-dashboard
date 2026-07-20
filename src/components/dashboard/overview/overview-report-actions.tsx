@@ -1,7 +1,8 @@
 "use client";
 
-import { CalendarDays, ChevronDown, Download, ListFilter } from "lucide-react";
+import { Download, ListFilter } from "lucide-react";
 import { type PointerEvent as ReactPointerEvent, useEffect, useId, useRef, useState } from "react";
+import { ReportingPeriodPopover } from "@/components/dashboard/reporting-period/reporting-period-popover";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
 import { PLAN_DEFINITIONS } from "@/data/mock/plans";
@@ -17,11 +18,7 @@ const TRANSACTION_STATUS_OPTIONS = [
   { label: "Failed", value: "failed" },
 ] as const satisfies readonly { readonly label: string; readonly value: TransactionStatus }[];
 
-interface OverviewReportActionsProps {
-  readonly reportingPeriod: string;
-}
-
-export function OverviewReportActions({ reportingPeriod }: Readonly<OverviewReportActionsProps>) {
+export function OverviewReportActions() {
   const {
     planFilter,
     setPlanFilter,
@@ -101,15 +98,7 @@ export function OverviewReportActions({ reportingPeriod }: Readonly<OverviewRepo
 
   return (
     <div className="overview-report-actions">
-      <button
-        className="overview-date-control"
-        type="button"
-        aria-label={`Reporting period: ${reportingPeriod}`}
-      >
-        <CalendarDays size={17} strokeWidth={1.8} aria-hidden="true" />
-        <span>{reportingPeriod}</span>
-        <ChevronDown size={16} strokeWidth={1.8} aria-hidden="true" />
-      </button>
+      <ReportingPeriodPopover />
 
       <div className="overview-secondary-actions">
         <div className="overview-filter-control">

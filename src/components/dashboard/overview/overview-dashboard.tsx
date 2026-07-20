@@ -1,6 +1,5 @@
 import { PageHeader } from "@/components/ui/page-header";
 import { PAGE_COPY } from "@/data/mock/pages";
-import { REPORTING_PERIOD } from "@/data/mock/reporting";
 import { TRANSACTIONS } from "@/data/mock/transactions";
 import { CustomerGrowth } from "./customer-growth";
 import { OverviewMetrics } from "./overview-metrics";
@@ -18,7 +17,7 @@ export function OverviewDashboard() {
           className="overview-page-header"
           title={PAGE_COPY.overview.title}
           description={PAGE_COPY.overview.description}
-          actions={<OverviewReportActions reportingPeriod={REPORTING_PERIOD.displayLabel} />}
+          actions={<OverviewReportActions />}
         />
 
         <OverviewMetrics />

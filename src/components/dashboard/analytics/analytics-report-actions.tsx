@@ -1,7 +1,8 @@
 "use client";
 
-import { CalendarDays, ChevronDown, Download, ListFilter, Repeat2 } from "lucide-react";
+import { Download, ListFilter, Repeat2 } from "lucide-react";
 import { type PointerEvent as ReactPointerEvent, useEffect, useId, useRef, useState } from "react";
+import { ReportingPeriodPopover } from "@/components/dashboard/reporting-period/reporting-period-popover";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
 import type { AnalyticsChurnFilter } from "@/data/mock/analytics";
@@ -11,11 +12,7 @@ import { downloadCsv } from "@/lib/csv";
 import { ANALYTICS_EXPORT_FILE_NAME, buildAnalyticsReportCsv } from "./analytics-export";
 import { useAnalyticsReport } from "./analytics-report-context";
 
-interface AnalyticsReportActionsProps {
-  readonly reportingPeriod: string;
-}
-
-export function AnalyticsReportActions({ reportingPeriod }: Readonly<AnalyticsReportActionsProps>) {
+export function AnalyticsReportActions() {
   const {
     churnFilter,
     compareToPrevious,
@@ -103,15 +100,7 @@ export function AnalyticsReportActions({ reportingPeriod }: Readonly<AnalyticsRe
 
   return (
     <div className="analytics-report-actions">
-      <button
-        className="analytics-date-control"
-        type="button"
-        aria-label={`Reporting period: ${reportingPeriod}`}
-      >
-        <CalendarDays size={17} strokeWidth={1.8} aria-hidden="true" />
-        <span>{reportingPeriod}</span>
-        <ChevronDown size={16} strokeWidth={1.8} aria-hidden="true" />
-      </button>
+      <ReportingPeriodPopover />
 
       <Button
         className="analytics-compare-control"

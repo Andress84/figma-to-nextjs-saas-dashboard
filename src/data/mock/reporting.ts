@@ -7,6 +7,27 @@ export const REPORTING_PERIOD = {
   displayLabel: formatDateRange("2026-06-15", "2026-07-14"),
 } as const satisfies ReportingPeriod;
 
+export const REPORTING_PERIOD_PRESET = "Last 30 days";
+
+export const REPORTING_CALENDAR_MONTHS = [
+  {
+    id: "june-2026",
+    label: "June 2026",
+    monthName: "June",
+    monthNumber: "06",
+    daysInMonth: 30,
+    leadingEmptyDays: 1,
+  },
+  {
+    id: "july-2026",
+    label: "July 2026",
+    monthName: "July",
+    monthNumber: "07",
+    daysInMonth: 31,
+    leadingEmptyDays: 3,
+  },
+] as const;
+
 export const RECURRING_REVENUE = {
   currentMrr: 84_720,
   previousMrr: 78_140,

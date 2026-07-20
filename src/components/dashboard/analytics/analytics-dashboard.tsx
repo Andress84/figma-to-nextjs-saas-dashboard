@@ -1,6 +1,5 @@
 import { PageHeader } from "@/components/ui/page-header";
 import { PAGE_COPY } from "@/data/mock/pages";
-import { REPORTING_PERIOD } from "@/data/mock/reporting";
 import { AnalyticsMetrics } from "./analytics-metrics";
 import { AnalyticsReportActions } from "./analytics-report-actions";
 import { AnalyticsReportProvider } from "./analytics-report-context";
@@ -17,7 +16,7 @@ export function AnalyticsDashboard() {
           className="analytics-page-header"
           title={PAGE_COPY.analytics.title}
           description={PAGE_COPY.analytics.description}
-          actions={<AnalyticsReportActions reportingPeriod={REPORTING_PERIOD.displayLabel} />}
+          actions={<AnalyticsReportActions />}
         />
 
         <AnalyticsMetrics />
