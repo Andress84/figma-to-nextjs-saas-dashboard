@@ -549,6 +549,41 @@ textarea {
   color: var(--color-text-primary);
 }
 
+.top-header-icon-button[data-active="true"] {
+  border-color: var(--color-border-accent);
+  background: var(--color-surface-selected);
+  color: var(--color-accent-lavender);
+}
+
+.top-header-utility-status {
+  position: absolute;
+  top: calc(100% - var(--space-1));
+  right: var(--layout-content-padding-desktop);
+  display: flex;
+  max-width: min(360px, calc(100vw - var(--space-8)));
+  min-height: var(--size-interactive-min);
+  align-items: center;
+  gap: var(--space-2);
+  padding-left: var(--space-4);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-control);
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow-card);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-ui-label);
+  font-weight: 600;
+}
+
+.top-header-utility-status > span {
+  min-width: 0;
+  flex: 1;
+}
+
+.top-header-utility-dismiss {
+  flex: 0 0 auto;
+  border: 0;
+}
+
 .notification-dot {
   position: absolute;
   top: 8px;
@@ -4476,6 +4511,10 @@ textarea {
     padding-left: var(--layout-content-padding-compact);
   }
 
+  .top-header-utility-status {
+    right: var(--layout-content-padding-compact);
+  }
+
   .page-header--with-actions {
     align-items: stretch;
     flex-direction: column;
@@ -4870,6 +4909,18 @@ textarea {
   .ui-tab,
   .ui-segmented-option {
     min-height: var(--size-interactive-min);
+  }
+
+  .ui-input,
+  .ui-select,
+  .ui-input-control,
+  .ui-select-control {
+    min-height: var(--size-interactive-min);
+  }
+
+  .customer-lifecycle-tabs .ui-tab,
+  .overview-revenue-card .ui-segmented-option {
+    min-height: calc(var(--size-interactive-min) + 1px);
   }
 
   .ui-icon-button--size-default,
@@ -5542,7 +5593,7 @@ textarea {
   }
 
   .overview-revenue-card .ui-segmented-option {
-    min-height: 36px;
+    min-height: calc(var(--size-interactive-min) + 1px);
     padding-inline: var(--space-2);
     font-size: var(--font-size-caption);
   }

@@ -37,6 +37,18 @@ async function expectFocusInsideDrawer(page: Page) {
     .toBe(true);
 }
 
+async function expectNoDocumentOverflow(page: Page, message: string) {
+  await expect
+    .poll(
+      () =>
+        page.evaluate(
+          () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+        ),
+      { message },
+    )
+    .toBeLessThanOrEqual(0);
+}
+
 async function openReportingPeriod(page: Page) {
   const trigger = page.getByRole("button", {
     name: "Reporting period: Jun 15 – Jul 14, 2026",
@@ -63,11 +75,10 @@ async function expectReportingPeriodInsideViewport(
   expect(bounds?.y).toBeGreaterThanOrEqual(0);
   expect((bounds?.x ?? 0) + (bounds?.width ?? 0)).toBeLessThanOrEqual(viewport.width);
   expect((bounds?.y ?? 0) + (bounds?.height ?? 0)).toBeLessThanOrEqual(viewport.height);
-  expect(
-    await page.evaluate(
-      () => document.documentElement.scrollWidth > document.documentElement.clientWidth,
-    ),
-  ).toBe(false);
+  await expectNoDocumentOverflow(
+    page,
+    `Reporting-period dialog caused overflow at ${viewport.width}×${viewport.height}`,
+  );
 }
 
 test("navigates between every dashboard route", async ({ page }) => {
@@ -109,6 +120,21 @@ test("renders the approved shared desktop shell content", async ({ page }) => {
   expect(await sidebar.innerText()).not.toContain("null");
   await expect(page.getByRole("button", { name: "Help" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Notifications" })).toBeVisible();
+
+  const helpButton = page.getByRole("button", { name: "Help" });
+  await helpButton.click();
+  await expect(page.locator(".top-header-utility-status")).toHaveText(
+    "Help resources are not connected in this frontend demo.",
+  );
+  await expect(helpButton).toHaveAttribute("aria-expanded", "true");
+  await page.keyboard.press("Escape");
+  await expect(page.locator(".top-header-utility-status")).toBeHidden();
+
+  const notificationsButton = page.getByRole("button", { name: "Notifications" });
+  await notificationsButton.click();
+  await expect(page.locator(".top-header-utility-status")).toHaveText("You’re all caught up.");
+  await page.getByRole("button", { name: "Dismiss utility message" }).click();
+  await expect(notificationsButton).toBeFocused();
   await expect(page.getByText("Phase 1", { exact: true })).toHaveCount(0);
   await expect(page.getByText("Technical foundation", { exact: true })).toHaveCount(0);
   await expect(page.getByText("Portfolio project", { exact: true })).toHaveCount(0);
@@ -183,10 +209,10 @@ test("contains the Overview layout at every required integration viewport", asyn
     await expect(page.getByRole("heading", { level: 1, name: "Overview" })).toBeVisible();
     await expect(page.getByRole("figure", { name: "Revenue Overview" })).toBeVisible();
 
-    const hasHorizontalOverflow = await page.evaluate(
-      () => document.documentElement.scrollWidth > document.documentElement.clientWidth,
+    await expectNoDocumentOverflow(
+      page,
+      `Unexpected Overview overflow at ${viewport.width}×${viewport.height}`,
     );
-    expect(hasHorizontalOverflow).toBe(false);
   }
 
   expect(consoleProblems).toEqual([]);
@@ -241,7 +267,7 @@ test("contains both calendar months at every required desktop viewport", async (
     { width: 1024, height: 800 },
   ] as const) {
     await page.setViewportSize(viewport);
-    await page.goto("/", { waitUntil: "domcontentloaded" });
+    await page.goto("/", { waitUntil: "networkidle" });
     const { dialog, trigger } = await openReportingPeriod(page);
 
     await expectReportingPeriodInsideViewport(page, dialog, viewport);
@@ -270,7 +296,7 @@ test("contains and operates the single-month calendar at every required mobile v
     { width: 320, height: 700 },
   ] as const) {
     await page.setViewportSize(viewport);
-    await page.goto("/", { waitUntil: "domcontentloaded" });
+    await page.goto("/", { waitUntil: "networkidle" });
     const { dialog, trigger } = await openReportingPeriod(page);
     const juneHeading = dialog.getByRole("heading", { level: 3, name: "June 2026" });
     const julyHeading = dialog.getByRole("heading", { level: 3, name: "July 2026" });
@@ -348,11 +374,15 @@ test("keeps the approved Overview actions available on mobile", async ({ page })
     expect(Math.abs((filterBounds?.width ?? 0) - (exportBounds?.width ?? 0))).toBeLessThanOrEqual(
       1,
     );
-    expect(
-      await page.evaluate(
-        () => document.documentElement.scrollWidth > document.documentElement.clientWidth,
-      ),
-    ).toBe(false);
+    await expectNoDocumentOverflow(
+      page,
+      `Unexpected Overview actions overflow at ${viewport.width}×${viewport.height}`,
+    );
+
+    for (const metric of ["Revenue", "MRR"]) {
+      const metricBounds = await page.getByRole("radio", { name: metric }).boundingBox();
+      expect(metricBounds?.height).toBeGreaterThanOrEqual(44);
+    }
   }
 
   const filterAction = page.getByRole("button", { name: "Filters" });
@@ -468,11 +498,10 @@ test("keeps Analytics responsive and its controls reachable at required widths",
     await expect(page.getByRole("button", { name: "Export report" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Filters" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Compare to previous period" })).toBeVisible();
-    expect(
-      await page.evaluate(
-        () => document.documentElement.scrollWidth > document.documentElement.clientWidth,
-      ),
-    ).toBe(false);
+    await expectNoDocumentOverflow(
+      page,
+      `Unexpected Analytics overflow at ${viewport.width}×${viewport.height}`,
+    );
   }
 
   const dateControl = page.getByRole("button", {
@@ -662,15 +691,24 @@ test("keeps Customers responsive with contained scrolling at every required view
     await expect(page.getByRole("button", { name: "Add customer" })).toBeVisible();
     await expect(page.getByRole("searchbox", { name: "Search customers" })).toBeVisible();
     await expect(page.getByRole("tab", { name: "Past due" })).toBeAttached();
-    expect(
-      await page.evaluate(
-        () => document.documentElement.scrollWidth > document.documentElement.clientWidth,
-      ),
-    ).toBe(false);
+    await expectNoDocumentOverflow(
+      page,
+      `Unexpected Customers overflow at ${viewport.width}×${viewport.height}`,
+    );
 
     if (viewport.width < 1024) {
       await expect(page.locator(".mobile-navigation")).toBeVisible();
       await expect(page.getByRole("complementary")).toBeHidden();
+
+      const searchBounds = await page
+        .getByRole("searchbox", { name: "Search customers" })
+        .boundingBox();
+      expect(searchBounds?.height).toBeGreaterThanOrEqual(44);
+
+      for (const tabName of ["All", "Active", "Trial", "Past due", "Churned"]) {
+        const tabBounds = await page.getByRole("tab", { name: tabName }).boundingBox();
+        expect(tabBounds?.height).toBeGreaterThanOrEqual(44);
+      }
     }
   }
 
@@ -858,11 +896,10 @@ test("keeps Subscriptions responsive with contained table scrolling and mobile n
     await expect(page.getByRole("heading", { level: 1, name: "Subscriptions" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Add subscription" })).toBeVisible();
     await expect(page.getByRole("searchbox", { name: "Search subscriptions" })).toBeAttached();
-    expect(
-      await page.evaluate(
-        () => document.documentElement.scrollWidth > document.documentElement.clientWidth,
-      ),
-    ).toBe(false);
+    await expectNoDocumentOverflow(
+      page,
+      `Unexpected Subscriptions overflow at ${viewport.width}×${viewport.height}`,
+    );
 
     const addBounds = await page.getByRole("button", { name: "Add subscription" }).boundingBox();
     expect(addBounds?.height).toBeGreaterThanOrEqual(viewport.width < 1024 ? 44 : 40);
@@ -1096,11 +1133,10 @@ test("keeps Settings responsive at every required integration viewport", async (
     await expect(page.getByRole("button", { name: "Save changes" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Discard changes" })).toBeVisible();
     await expect(page.getByRole("tab", { name: "Integrations" })).toBeAttached();
-    expect(
-      await page.evaluate(
-        () => document.documentElement.scrollWidth > document.documentElement.clientWidth,
-      ),
-    ).toBe(false);
+    await expectNoDocumentOverflow(
+      page,
+      `Unexpected Settings overflow at ${viewport.width}×${viewport.height}`,
+    );
 
     for (const buttonName of ["Save changes", "Discard changes"]) {
       const bounds = await page.getByRole("button", { name: buttonName }).boundingBox();
@@ -1199,10 +1235,7 @@ test("renders the approved mobile app bar and notification feedback", async ({ p
   await page.keyboard.press("Escape");
   await expect(page.locator(".mobile-notification-status")).toBeHidden();
 
-  const hasHorizontalOverflow = await page.evaluate(
-    () => document.documentElement.scrollWidth > document.documentElement.clientWidth,
-  );
-  expect(hasHorizontalOverflow).toBe(false);
+  await expectNoDocumentOverflow(page, "Unexpected mobile application-bar overflow");
 });
 
 test("opens a modal drawer and contains keyboard focus", async ({ page }) => {
