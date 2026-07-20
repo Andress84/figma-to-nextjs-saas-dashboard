@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 export interface TabItem {
   controlsId?: string;
   disabled?: boolean;
+  id?: string;
   label: ReactNode;
   value: string;
 }
@@ -100,6 +101,7 @@ export function Tabs({
               tabRefs.current[index] = element;
             }}
             key={item.value}
+            id={item.id}
             className="ui-tab"
             type="button"
             role="tab"

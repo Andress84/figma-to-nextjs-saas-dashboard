@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 import { Tabs } from "./tabs";
 
 const items = [
-  { value: "all", label: "All" },
+  { value: "all", label: "All", id: "all-tab", controlsId: "all-panel" },
   { value: "active", label: "Active", disabled: true },
   { value: "trial", label: "Trial" },
   { value: "churned", label: "Churned" },
@@ -24,6 +24,8 @@ describe("Tabs", () => {
       "tabindex",
       "0",
     );
+    expect(screen.getByRole("tab", { name: "All" })).toHaveAttribute("id", "all-tab");
+    expect(screen.getByRole("tab", { name: "All" })).toHaveAttribute("aria-controls", "all-panel");
 
     screen.getByRole("tab", { name: "All" }).focus();
     await user.keyboard("{ArrowRight}");

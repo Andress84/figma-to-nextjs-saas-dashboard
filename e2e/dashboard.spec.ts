@@ -769,6 +769,217 @@ test("passes Subscriptions WCAG smoke tests on desktop and mobile", async ({ pag
   }
 });
 
+test("renders and operates the approved Settings dashboard", async ({ page }) => {
+  const consoleProblems: string[] = [];
+  page.on("console", (message) => {
+    if (message.type() === "error" || message.type() === "warning") {
+      consoleProblems.push(message.text());
+    }
+  });
+
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/settings");
+
+  await expect(page).toHaveTitle("Settings — Subtera");
+  await expect(page.getByRole("heading", { level: 1, name: "Settings" })).toBeVisible();
+  await expect(
+    page.getByRole("navigation", { name: "Primary navigation" }).getByRole("link", {
+      name: "Settings",
+    }),
+  ).toHaveAttribute("aria-current", "page");
+  await expect(page.getByRole("tab", { name: "General" })).toHaveAttribute("aria-selected", "true");
+
+  for (const sectionName of [
+    "Workspace Profile",
+    "Regional Preferences",
+    "Reporting Defaults",
+    "Notifications",
+    "Data and Privacy",
+    "Danger Zone",
+  ]) {
+    await expect(page.getByRole("region", { name: sectionName })).toBeVisible();
+  }
+
+  const save = page.getByRole("button", { name: "Save changes" });
+  const discard = page.getByRole("button", { name: "Discard changes" });
+  await expect(save).toBeDisabled();
+  await expect(discard).toBeDisabled();
+  await expect(page.getByLabel("Workspace name")).toHaveValue("Acme Cloud");
+  await expect(page.getByLabel("Currency")).toHaveValue("USD — US Dollar");
+  await expect(page.getByLabel("Default reporting period")).toHaveValue("Last 30 days");
+  await expect(page.getByText("Jul 14, 2026 at 10:42")).toBeVisible();
+
+  await page.getByLabel("Workspace name").fill("Acme Studio");
+  await page.getByLabel("Time zone").selectOption("UTC");
+  await page.getByRole("switch", { name: "Compare with previous period" }).click();
+  await expect(save).toBeEnabled();
+  await expect(discard).toBeEnabled();
+  await save.click();
+  await expect(page.locator(".settings-announcement")).toHaveText(
+    "Settings saved for this in-memory demo session.",
+  );
+  await expect(save).toBeDisabled();
+
+  await page.getByLabel("Workspace ID or slug").fill("Not URL Safe");
+  await save.click();
+  await expect(page.getByText(/Use lowercase letters, numbers and single hyphens/)).toBeVisible();
+  await expect(page.getByLabel("Workspace ID or slug")).toBeFocused();
+  await expect(page.locator(".settings-announcement")).toHaveText(
+    "Settings were not saved. Correct the highlighted fields and try again.",
+  );
+  await discard.click();
+  await expect(page.getByLabel("Workspace ID or slug")).toHaveValue("acme-cloud");
+  await expect(page.getByLabel("Workspace name")).toHaveValue("Acme Studio");
+  expect(consoleProblems).toEqual([]);
+});
+
+test("supports Settings tabs, deterministic exports, logo preview, and safe deletion", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/settings");
+
+  const generalTab = page.getByRole("tab", { name: "General" });
+  await generalTab.focus();
+  await page.keyboard.press("ArrowRight");
+  await expect(page.getByRole("tab", { name: "Reporting" })).toBeFocused();
+  await expect(page.getByRole("tabpanel", { name: "Reporting" })).toBeVisible();
+  await expect(page.getByText(/not configured in the frontend demo/)).toBeVisible();
+  await page.getByRole("button", { name: "Return to General" }).click();
+  await expect(page.getByRole("tabpanel", { name: "General" })).toBeVisible();
+
+  let downloadPromise = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Export workspace data" }).click();
+  let download = await downloadPromise;
+  expect(download.suggestedFilename()).toBe("subtera-workspace-settings-2026-07-14.json");
+
+  downloadPromise = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Download customer data" }).click();
+  download = await downloadPromise;
+  expect(download.suggestedFilename()).toBe("subtera-customers-2026-07-14.csv");
+
+  await page.getByLabel("Choose workspace logo file").setInputFiles({
+    buffer: Buffer.from("local-logo"),
+    mimeType: "image/png",
+    name: "acme-logo.png",
+  });
+  await expect(page.getByRole("img", { name: "Workspace logo preview" })).toBeVisible();
+  await expect(page.getByText("Local preview: acme-logo.png")).toBeVisible();
+  await expect(page.locator(".settings-announcement")).toHaveText(
+    "Selected acme-logo.png as a local workspace logo preview. Nothing was uploaded.",
+  );
+  await page.getByRole("button", { name: "Discard changes" }).click();
+  await expect(page.getByRole("img", { name: "Workspace logo preview" })).toHaveCount(0);
+
+  const deleteTrigger = page.getByRole("button", { name: "Delete workspace" });
+  await deleteTrigger.click();
+  let dialog = page.getByRole("alertdialog", { name: "Delete Acme Cloud?" });
+  await expect(dialog.getByRole("button", { name: "Cancel" })).toBeFocused();
+  await page.keyboard.press("Tab");
+  await expect(dialog.getByRole("button", { name: "Confirm demo deletion" })).toBeFocused();
+  await page.keyboard.press("Escape");
+  await expect(dialog).toBeHidden();
+  await expect(deleteTrigger).toBeFocused();
+
+  await deleteTrigger.click();
+  dialog = page.getByRole("alertdialog", { name: "Delete Acme Cloud?" });
+  await dialog.getByRole("button", { name: "Confirm demo deletion" }).click();
+  await expect(dialog).toBeHidden();
+  await expect(deleteTrigger).toBeFocused();
+  await expect(page.locator(".settings-announcement")).toHaveText(
+    "Delete workspace was confirmed as a demo action. No workspace data was deleted.",
+  );
+  await expect(page.getByLabel("Workspace name")).toHaveValue("Acme Cloud");
+});
+
+test("keeps Settings responsive at every required integration viewport", async ({ page }) => {
+  const consoleProblems: string[] = [];
+  page.on("console", (message) => {
+    if (message.type() === "error" || message.type() === "warning") {
+      consoleProblems.push(message.text());
+    }
+  });
+  const viewports = [
+    { width: 1440, height: 900 },
+    { width: 1200, height: 900 },
+    { width: 1100, height: 800 },
+    { width: 1024, height: 800 },
+    { width: 768, height: 800 },
+    { width: 390, height: 844 },
+    { width: 320, height: 700 },
+  ] as const;
+
+  await page.goto("/settings");
+
+  for (const viewport of viewports) {
+    await page.setViewportSize(viewport);
+    await expect(page.getByRole("heading", { level: 1, name: "Settings" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Save changes" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Discard changes" })).toBeVisible();
+    await expect(page.getByRole("tab", { name: "Integrations" })).toBeAttached();
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth > document.documentElement.clientWidth,
+      ),
+    ).toBe(false);
+
+    for (const buttonName of ["Save changes", "Discard changes"]) {
+      const bounds = await page.getByRole("button", { name: buttonName }).boundingBox();
+      expect(bounds?.height).toBeGreaterThanOrEqual(viewport.width < 1024 ? 44 : 40);
+    }
+
+    const columns = await page
+      .locator(".settings-general-grid")
+      .evaluate(
+        (element) => window.getComputedStyle(element).gridTemplateColumns.split(" ").length,
+      );
+    expect(columns).toBe(viewport.width > 1100 ? 2 : 1);
+  }
+
+  const sectionPositions = await page.evaluate(() => {
+    const top = (className: string) =>
+      document.querySelector<HTMLElement>(className)?.getBoundingClientRect().top ?? -1;
+    return [
+      top(".settings-workspace-profile"),
+      top(".settings-reporting-defaults"),
+      top(".settings-regional-preferences"),
+      top(".settings-notifications"),
+      top(".settings-data-privacy"),
+      top(".settings-danger-zone"),
+    ];
+  });
+  expect(sectionPositions).toEqual([...sectionPositions].sort((left, right) => left - right));
+  expect(
+    await page
+      .getByRole("region", { name: "Scrollable settings navigation" })
+      .evaluate((element) => element.scrollWidth > element.clientWidth),
+  ).toBe(true);
+
+  const { drawer } = await openMobileDrawer(page);
+  await expect(
+    drawer.getByRole("navigation", { name: "Mobile primary navigation" }).getByRole("link", {
+      name: "Settings",
+    }),
+  ).toHaveAttribute("aria-current", "page");
+  await page.keyboard.press("Escape");
+  expect(consoleProblems).toEqual([]);
+});
+
+test("passes Settings WCAG smoke tests on desktop and mobile", async ({ page }) => {
+  for (const viewport of [
+    { width: 1440, height: 900 },
+    { width: 390, height: 844 },
+  ]) {
+    await page.setViewportSize(viewport);
+    await page.goto("/settings");
+
+    const results = await new AxeBuilder({ page })
+      .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
+      .analyze();
+    expect(results.violations).toEqual([]);
+  }
+});
+
 test("passes an automated WCAG accessibility smoke test", async ({ page }) => {
   await page.goto("/");
 

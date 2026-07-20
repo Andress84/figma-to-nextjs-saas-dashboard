@@ -1,6 +1,21 @@
 import { PRODUCT_IDENTITY } from "@/data/mock/identity";
 import type { SettingsData } from "@/types/dashboard";
 
+export const SETTINGS_OPTIONS = {
+  regionalPreferences: {
+    timeZones: ["Europe/Berlin", "UTC", "America/New_York"],
+    currencies: ["USD — US Dollar", "EUR — Euro", "GBP — Pound Sterling"],
+    languages: ["English", "German", "French"],
+    dateFormats: ["MM/DD/YYYY", "DD/MM/YYYY", "YYYY-MM-DD"],
+    weekStartsOn: ["Monday", "Sunday"],
+  },
+  reportingDefaults: {
+    reportingPeriods: ["Last 7 days", "Last 30 days", "Last 90 days"],
+    revenueViews: ["Gross Revenue", "Monthly Recurring Revenue"],
+    chartGranularities: ["Daily", "Weekly", "Monthly"],
+  },
+} as const;
+
 export const SETTINGS_DATA = {
   workspaceProfile: {
     workspaceLogo: "A",
@@ -12,7 +27,7 @@ export const SETTINGS_DATA = {
   },
   regionalPreferences: {
     timeZone: "Europe/Berlin",
-    currency: "USD – US Dollar",
+    currency: "USD — US Dollar",
     language: "English",
     dateFormat: "MM/DD/YYYY",
     weekStartsOn: "Monday",
