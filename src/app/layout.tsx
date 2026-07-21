@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Manrope } from "next/font/google";
 import type { ReactNode } from "react";
+import { AppPreloader } from "@/components/layout/app-preloader";
 import "./globals.css";
 import { Providers } from "./providers";
 
@@ -28,6 +29,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
   return (
     <html className={manrope.variable} lang="en">
       <body>
+        <AppPreloader />
         <Providers>{children}</Providers>
       </body>
     </html>
