@@ -10,6 +10,35 @@ The project demonstrates a complete UI/UX-to-frontend workflow for the Upwork Pr
 
 [Open the Subtera dashboard](https://andress84.github.io/figma-to-nextjs-saas-dashboard/)
 
+## Screenshots
+
+### Overview dashboard
+
+[![Subtera Overview dashboard](docs/screenshots/01-overview-desktop.png)](https://andress84.github.io/figma-to-nextjs-saas-dashboard/)
+
+### Analytics and responsive mobile layout
+
+<table>
+  <tr>
+    <td width="67%" valign="top">
+      <img
+        src="docs/screenshots/02-analytics-desktop.png"
+        alt="Subtera Analytics dashboard displayed on a desktop viewport"
+      />
+    </td>
+    <td width="33%" valign="top">
+      <img
+        src="docs/screenshots/03-overview-mobile.png"
+        alt="Subtera Overview dashboard displayed on a mobile viewport"
+      />
+    </td>
+  </tr>
+  <tr>
+    <td align="center"><strong>Analytics — desktop</strong></td>
+    <td align="center"><strong>Overview — mobile</strong></td>
+  </tr>
+</table>
+
 ## Project status
 
 - **Technical foundation:** complete
@@ -47,6 +76,25 @@ The repository contains the approved design handoff, reusable Next.js implementa
 | `/settings` | Settings | Workspace profile, reporting defaults, regional preferences, notifications, privacy |
 
 All routes share one responsive application shell and a consistent component, token, and data system.
+
+## My role
+
+I designed and implemented this portfolio project from end to end.
+
+My responsibilities included:
+
+- defining the fictional SaaS product concept and dashboard scope
+- creating the original desktop and mobile UI/UX design
+- planning the information architecture and responsive behavior
+- preparing the component system, design tokens, interaction states, and implementation handoff
+- converting the approved interface into reusable Next.js and React components
+- implementing charts, data tables, filters, forms, dialogs, navigation, and responsive layouts
+- creating deterministic fictional product and subscription data
+- implementing keyboard accessibility, focus management, reduced-motion support, and mobile touch targets
+- writing unit, component, accessibility, and cross-browser end-to-end tests
+- configuring continuous integration and automatic GitHub Pages deployment
+
+The project demonstrates both my UI/UX design process and my frontend implementation skills.
 
 ## Technology stack
 
@@ -224,6 +272,14 @@ The dashboard includes:
 - minimum mobile touch-target sizing
 - reduced-motion support
 - automated accessibility smoke tests
+
+## License
+
+The application source code is available under the [MIT License](LICENSE).
+
+The original Subtera UI/UX design, approved design screens, screenshots, presentation assets, visual references, and other materials stored under `design/` and `docs/screenshots/` are not covered by the MIT License.
+
+Those visual materials remain copyright © 2026 Andrii Kurus (LaimAnd). See [`design/LICENSE.md`](design/LICENSE.md) for details.
 
 ## Demo limitations
 

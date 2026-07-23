@@ -1,7 +1,33 @@
 {
   "name": "figma-to-nextjs-saas-dashboard",
-  "version": "0.1.0",
+  "version": "1.0.0",
+  "description": "Portfolio SaaS analytics dashboard implemented from an original Figma UI/UX design with Next.js, React, TypeScript, Tailwind CSS, Recharts, Vitest, and Playwright.",
   "private": true,
+  "author": "Andrii Kurus (LaimAnd)",
+  "license": "MIT",
+  "homepage": "https://andress84.github.io/figma-to-nextjs-saas-dashboard/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Andress84/figma-to-nextjs-saas-dashboard.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Andress84/figma-to-nextjs-saas-dashboard/issues"
+  },
+  "keywords": [
+    "nextjs",
+    "react",
+    "typescript",
+    "tailwindcss",
+    "saas-dashboard",
+    "figma-to-nextjs",
+    "figma-to-code",
+    "ui-ux",
+    "responsive-design",
+    "recharts",
+    "playwright",
+    "vitest",
+    "portfolio"
+  ],
   "packageManager": "pnpm@11.12.0",
   "engines": {
     "node": ">=24.11.0 <25"
